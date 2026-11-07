@@ -9,7 +9,7 @@ const API_URL = "https://ikigai-gemini-api.apenisoara.workers.dev";
 
 // Public Turnstile site key from Cloudflare Dashboard → Turnstile.
 // Create a widget that allows checkerandu.github.io and apenisoara.github.io.
-const TURNSTILE_SITE_KEY = "";
+const TURNSTILE_SITE_KEY = "0x4AAAAAAF3zu4B_maR1YAyf";
 
 let turnstileWidgetId = null;
 
