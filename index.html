@@ -6,6 +6,7 @@
   <meta name="description" content="Explore your Ikigai by connecting what you love, what you're good at, what you can be paid for, and what the world needs.">
   <title>Ikigai Finder — Find your Ikigai</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -105,7 +106,10 @@
 
       <div class="form-footer">
         <p>Your answers are a starting point, not a life-long label.</p>
-        <button type="submit" id="find-button">Explore my Ikigai <span aria-hidden="true">↗</span></button>
+        <div class="form-actions">
+          <div id="turnstile-widget" class="turnstile-widget" aria-label="Human verification"></div>
+          <button type="submit" id="find-button">Explore my Ikigai <span aria-hidden="true">↗</span></button>
+        </div>
       </div>
     </form>
 
