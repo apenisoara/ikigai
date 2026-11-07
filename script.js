@@ -5,7 +5,7 @@ const resultsMessage = document.querySelector("#results-message");
 const editAnswersButton = document.querySelector("#edit-answers");
 const findButton = document.querySelector("#find-button");
 
-const API_URL = "https://ikigaigeminiapi.andrei-penisoara.workers.dev";
+const API_URL = "https://ikigai-gemini-api.apenisoara.workers.dev";
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
