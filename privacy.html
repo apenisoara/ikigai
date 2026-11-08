@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Privacy notice for Ikigai Finder — how we process personal data under the GDPR in the European Union / Belgium.">
+  <title>Privacy — Ikigai Finder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="index.html">ikigai<span>.</span>finder</a>
+    <div class="header-tools">
+      <a class="header-note" href="index.html">← Back to the app</a>
+    </div>
+  </header>
+
+  <main class="page-shell legal-page">
+    <header class="legal-intro">
+      <p class="eyebrow">PRIVACY NOTICE</p>
+      <h1>How we handle your data</h1>
+      <p class="intro-copy">
+        This notice explains what happens when you use Ikigai Finder, a static
+        website hosted on GitHub Pages. It is written for visitors in the
+        European Union, including Belgium, and reflects the EU General Data
+        Protection Regulation (GDPR / AVG).
+      </p>
+      <p class="legal-meta">Last updated: 8 November 2026</p>
+    </header>
+
+    <article class="legal-content">
+      <section aria-labelledby="who-title">
+        <h2 id="who-title">1. Who is responsible</h2>
+        <p>
+          The operator of this website acts as the <strong>data controller</strong>
+          for personal data processed through Ikigai Finder.
+        </p>
+        <p>
+          This is an independent / hobby project (not a company product). For
+          privacy questions or GDPR requests, contact:
+        </p>
+        <p>
+          <strong>Contact:</strong>
+          <a href="mailto:privacy@example.com">privacy@example.com</a>
+          <!-- Replace with your real contact address before publishing. -->
+        </p>
+        <p>
+          If you are in Belgium, the supervisory authority is the
+          <strong>Gegevensbeschermingsautoriteit / Autorité de protection des
+          données (APD)</strong>:
+          <a href="https://www.gegevensbeschermingsautoriteit.be" rel="noopener noreferrer" target="_blank">gegevensbeschermingsautoriteit.be</a>
+          /
+          <a href="https://www.autoriteprotectiondonnees.be" rel="noopener noreferrer" target="_blank">autoriteprotectiondonnees.be</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="what-title">
+        <h2 id="what-title">2. What this website does</h2>
+        <p>
+          Ikigai Finder lets you answer four reflective questions and, if you
+          choose to submit the form, receive an AI-generated reflection. The
+          front end is static HTML/CSS/JavaScript. Form analysis is performed
+          through a Cloudflare Worker that calls a generative AI provider
+          (Google Gemini).
+        </p>
+      </section>
+
+      <section aria-labelledby="data-title">
+        <h2 id="data-title">3. What data we process</h2>
+
+        <h3>3.1 Form answers (only if you submit)</h3>
+        <p>When you click “Explore my Ikigai”, we send:</p>
+        <ul>
+          <li>your four free-text answers (what you love, strengths, paid work, world needs);</li>
+          <li>your selected interface language (<code>en</code>, <code>de</code>, <code>fr</code>, or <code>ro</code>);</li>
+          <li>a Cloudflare Turnstile token (bot protection);</li>
+          <li>an anonymous browser <code>clientId</code> used only for rate limiting.</li>
+        </ul>
+        <p>
+          Please do not include special-category data (for example health,
+          religion, political opinions, or biometric data) or other people’s
+          personal data in your answers. The service is not designed for that.
+        </p>
+
+        <h3>3.2 Data stored in your browser</h3>
+        <p>We use <code>localStorage</code> for:</p>
+        <ul>
+          <li>language preference;</li>
+          <li>an anonymous <code>clientId</code> and lightweight rate-limit state;</li>
+          <li>your optional monitoring consent choice (<code>granted</code> / <code>denied</code>), when that feature is enabled.</li>
+        </ul>
+        <p>
+          These values stay on your device unless you clear site data. They are
+          not used for advertising profiles.
+        </p>
+
+        <h3>3.3 Technical / security data</h3>
+        <p>
+          Cloudflare (Pages hosting edge, Turnstile, and the Worker) and GitHub
+          Pages may process standard technical data such as IP address, user
+          agent, timestamps, and request metadata to deliver the site, prevent
+          abuse, and keep the service available.
+        </p>
+
+        <h3>3.4 Optional website monitoring (Datadog RUM)</h3>
+        <p>
+          If a feature flag enables monitoring on this site, we may ask for your
+          consent before loading Datadog Real User Monitoring (RUM). Only after
+          you accept do we load the RUM script.
+        </p>
+        <p>When enabled and consented, Datadog may collect:</p>
+        <ul>
+          <li>page views and navigation;</li>
+          <li>performance timings and resource loads;</li>
+          <li>browser errors and long tasks;</li>
+          <li>interaction events (for example clicks);</li>
+          <li>session replay recordings of the page, where that product feature is turned on.</li>
+        </ul>
+        <p>
+          Monitoring is configured against Datadog’s <strong>EU site</strong>
+          (<code>datadoghq.eu</code>). You can change your choice later via
+          “Analytics preferences” on the main page, or by clearing this
+          site’s data in your browser.
+        </p>
+      </section>
+
+      <section aria-labelledby="purposes-title">
+        <h2 id="purposes-title">4. Why we process data (purposes &amp; legal bases)</h2>
+        <div class="legal-table-wrap">
+          <table class="legal-table">
+            <thead>
+              <tr>
+                <th scope="col">Processing</th>
+                <th scope="col">Purpose</th>
+                <th scope="col">Legal basis (GDPR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Form answers + AI reply</td>
+                <td>Provide the Ikigai reflection you requested</td>
+                <td>Art. 6(1)(b) — steps at your request / performance of the service</td>
+              </tr>
+              <tr>
+                <td>Turnstile + rate limits + <code>clientId</code></td>
+                <td>Protect the API from bots and fair-use overload</td>
+                <td>Art. 6(1)(f) — legitimate interest in security and availability</td>
+              </tr>
+              <tr>
+                <td>Language preference</td>
+                <td>Show the interface in your chosen language</td>
+                <td>Art. 6(1)(f) — legitimate interest in usability</td>
+              </tr>
+              <tr>
+                <td>Hosting / CDN logs</td>
+                <td>Deliver pages and keep infrastructure secure</td>
+                <td>Art. 6(1)(f) — legitimate interest in operating the website</td>
+              </tr>
+              <tr>
+                <td>Datadog RUM / session replay</td>
+                <td>Understand reliability, errors, and UX issues</td>
+                <td>Art. 6(1)(a) — consent (optional; can be withdrawn)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Where we rely on legitimate interests, you may object under GDPR
+          Article 21. Where we rely on consent, you may withdraw it at any time
+          without affecting prior lawful processing.
+        </p>
+      </section>
+
+      <section aria-labelledby="processors-title">
+        <h2 id="processors-title">5. Who receives the data</h2>
+        <p>Depending on what you use, data may be processed by:</p>
+        <ul>
+          <li>
+            <strong>GitHub, Inc.</strong> — static hosting (GitHub Pages).
+            See GitHub’s privacy statement for infrastructure processing.
+          </li>
+          <li>
+            <strong>Cloudflare, Inc.</strong> — CDN/edge delivery, Turnstile bot
+            protection, and the Worker that receives form submissions.
+          </li>
+          <li>
+            <strong>Google LLC</strong> (Gemini API) — generates the reflection
+            text from the answers you submit. Content may be processed outside
+            the EEA subject to Google’s terms and transfer safeguards.
+          </li>
+          <li>
+            <strong>Datadog, Inc.</strong> — only if monitoring is enabled and
+            you consent. EU region configuration is used
+            (<code>datadoghq.eu</code>). Datadog acts as a processor for
+            telemetry we send.
+          </li>
+        </ul>
+        <p>
+          We do not sell your personal data. We do not use your Ikigai answers
+          for advertising.
+        </p>
+      </section>
+
+      <section aria-labelledby="transfers-title">
+        <h2 id="transfers-title">6. International transfers</h2>
+        <p>
+          Some providers above are established in the United States or may
+          process data outside the European Economic Area. Where a transfer is
+          not covered by an adequacy decision, providers typically rely on
+          Standard Contractual Clauses (SCCs) and related safeguards under
+          GDPR Chapter V.
+        </p>
+        <p>
+          Datadog RUM for this site is pointed at the EU platform. Other
+          services (notably GitHub Pages hosting metadata, Cloudflare global
+          network routing, and Google Gemini) may involve processing outside
+          Belgium / the EEA.
+        </p>
+      </section>
+
+      <section aria-labelledby="retention-title">
+        <h2 id="retention-title">7. How long we keep data</h2>
+        <ul>
+          <li>
+            <strong>Browser storage</strong> — until you clear it, change
+            consent, or we change the storage key version.
+          </li>
+          <li>
+            <strong>Form submissions</strong> — processed to generate a reply.
+            The Worker is not operated as a long-term personal archive of your
+            answers; operational logs and provider-side retention follow each
+            vendor’s defaults and our rate-limit needs.
+          </li>
+          <li>
+            <strong>Monitoring telemetry</strong> — retained according to the
+            Datadog product retention settings configured for this application,
+            and only while consent remains granted for new collection.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="rights-title">
+        <h2 id="rights-title">8. Your rights (GDPR)</h2>
+        <p>If GDPR applies to you, you may have the right to:</p>
+        <ul>
+          <li>access your personal data;</li>
+          <li>rectify inaccurate data;</li>
+          <li>erase data (“right to be forgotten”), where applicable;</li>
+          <li>restrict or object to certain processing;</li>
+          <li>data portability, where processing is based on consent or contract and carried out by automated means;</li>
+          <li>withdraw consent for optional monitoring at any time;</li>
+          <li>lodge a complaint with a supervisory authority — in Belgium, the APD.</li>
+        </ul>
+        <p>
+          To exercise these rights, email the contact address above. Because
+          this site does not create user accounts, we may ask for enough
+          information to locate relevant records (for example approximate time
+          of a submission). Much of the data only exists in your browser and can
+          be deleted by clearing site data.
+        </p>
+      </section>
+
+      <section aria-labelledby="children-title">
+        <h2 id="children-title">9. Children</h2>
+        <p>
+          This website is not directed at children under 16. Do not submit
+          personal information about minors. Belgian / GDPR rules on children’s
+          consent for information-society services may require parental
+          authorisation below that age.
+        </p>
+      </section>
+
+      <section aria-labelledby="cookies-title">
+        <h2 id="cookies-title">10. Cookies and similar technologies</h2>
+        <p>
+          The core questionnaire experience uses <code>localStorage</code>, not
+          advertising cookies. Cloudflare Turnstile may set or read technical
+          cookies / storage needed for bot challenges. Datadog RUM, when
+          consented, may use cookies or similar storage to correlate a session.
+        </p>
+        <p>
+          Optional monitoring is shown only when the feature is enabled, and
+          collection starts after an explicit Accept / Reject choice.
+        </p>
+      </section>
+
+      <section aria-labelledby="changes-title">
+        <h2 id="changes-title">11. Changes to this notice</h2>
+        <p>
+          We may update this page when the website, vendors, or legal
+          requirements change. The “Last updated” date at the top will be
+          revised. Material changes to optional monitoring will continue to
+          respect a prior rejection until you choose otherwise.
+        </p>
+      </section>
+
+      <section aria-labelledby="disclaimer-title">
+        <h2 id="disclaimer-title">12. Important disclaimer</h2>
+        <p>
+          This page is a practical privacy notice for a small static project. It
+          is not legal advice. If you operate this site for an organisation, have
+          a lawyer review controller identity, contact details, retention, and
+          processor contracts (including Datadog DPA and Google / Cloudflare
+          terms) before relying on it publicly.
+        </p>
+      </section>
+    </article>
+
+    <footer class="site-footer">
+      <a href="index.html">← Return to Ikigai Finder</a>
+      <span class="footer-meta">Belgium / EU · GDPR</span>
+    </footer>
+  </main>
+</body>
+</html>

@@ -138,10 +138,39 @@
     <footer class="site-footer">
       <span data-i18n="footerCredit">Made by CheckerAndu and DaredCentaur802.</span>
       <span class="footer-meta">
+        <a href="privacy.html">Privacy</a>
+        <button type="button" id="monitoring-settings" class="text-button" hidden>
+          Analytics preferences
+        </button>
         <span data-i18n="footerTagline">Explore. Discover. Grow.</span>
         <span id="app-version" class="app-version" hidden></span>
       </span>
     </footer>
   </main>
+
+  <section id="monitoring-consent" class="monitoring-consent" hidden
+           aria-labelledby="monitoring-consent-title"
+           role="dialog"
+           aria-modal="false">
+    <div class="monitoring-consent-inner">
+      <div class="monitoring-consent-copy">
+        <h2 id="monitoring-consent-title">Site analytics and performance</h2>
+        <p>
+          To keep this site fast and reliable, we’d like to collect anonymous
+          analytics about page visits, interactions, performance, and errors.
+          This is optional and helps us improve your experience.
+          <a href="privacy.html">Learn more</a>
+        </p>
+      </div>
+      <div class="monitoring-consent-actions">
+        <button type="button" id="monitoring-reject" class="secondary-button">
+          Decline
+        </button>
+        <button type="button" id="monitoring-accept">
+          Accept
+        </button>
+      </div>
+    </div>
+  </section>
 </body>
 </html>

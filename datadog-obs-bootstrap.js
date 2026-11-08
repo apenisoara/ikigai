@@ -49,17 +49,12 @@ async function bootstrap() {
       return;
     }
 
-    const script = document.createElement('script');
+    const { initializeMonitoringConsent } =
+      await import('./datadog-obs-consent.js');
 
-    // Relative to this JS file, not the page URL.
-    script.src = new URL('./datadog-obs-rum.js', import.meta.url).href;
-    script.async = true;
-    script.onerror = () => {
-      console.warn(LOG_PREFIX, 'Could not load the RUM initializer.');
-    };
+    initializeMonitoringConsent();
 
-    document.head.appendChild(script);
-  } catch (error) {
+} catch (error) {
     // A flag/CDN failure must not break the website.
     console.warn(LOG_PREFIX, 'RUM not loaded: flag initialization failed.', error);
   }
