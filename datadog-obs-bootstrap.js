@@ -27,8 +27,12 @@ async function bootstrap() {
       env: 'production',
       flagConfigurationFetch: withTimeout(globalThis.fetch, 5_000),
 
-      enableRumFeatureFlagTracking: false,
-      enableFlagEvaluationTracking: false
+      // Feature Flags dashboard telemetry:
+      trackExposures: true,
+      enableFlagEvaluationTracking: true,
+
+      // Keep the flag gate independent of RUM:
+      enableRumFeatureFlagTracking: false
     });
 
     await OpenFeature.setProviderAndWait(provider, {
