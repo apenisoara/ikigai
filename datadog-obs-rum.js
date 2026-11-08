@@ -43,7 +43,7 @@
         site: 'datadoghq.eu',
 
         service: 'github-pages-site',
-        env: 'local-browser-debug',
+        env: 'production',
         version: (window.__IKIGAI_APP__ && window.__IKIGAI_APP__.version) || 'dev',
 
         allowedTrackingOrigins: [

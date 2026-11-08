@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <script src="app-version.js" defer></script>
-  <script src="datadog-rum-init.js" defer></script>
+  <script type="module" src="datadog-obs-bootstrap.js"></script>
   <script src="i18n.js" defer></script>
   <script src="script.js" defer></script>
 </head>
@@ -138,10 +138,36 @@
     <footer class="site-footer">
       <span data-i18n="footerCredit">Made by CheckerAndu and DaredCentaur802.</span>
       <span class="footer-meta">
-        <span data-i18n="footerTagline">Explore. Discover. Grow.</span>
+        <a href="privacy.html" data-i18n="footerPrivacy">Privacy</a>
+        <button type="button" id="monitoring-settings" class="text-button" hidden data-i18n="analyticsPreferences">
+          Analytics preferences
+        </button>
         <span id="app-version" class="app-version" hidden></span>
       </span>
     </footer>
   </main>
+
+  <section id="monitoring-consent" class="monitoring-consent" hidden
+           aria-labelledby="monitoring-consent-title"
+           role="dialog"
+           aria-modal="false">
+    <div class="monitoring-consent-inner">
+      <div class="monitoring-consent-copy">
+        <h2 id="monitoring-consent-title" data-i18n="monitoringConsentTitle">Site analytics and performance</h2>
+        <p>
+          <span data-i18n="monitoringConsentCopy">To keep this site fast and reliable, we’d like to collect anonymous analytics about page visits, interactions, performance, and errors. This is optional and helps us improve your experience.</span>
+          <a href="privacy.html" data-i18n="monitoringConsentLearnMore">Learn more</a>
+        </p>
+      </div>
+      <div class="monitoring-consent-actions">
+        <button type="button" id="monitoring-reject" class="secondary-button" data-i18n="monitoringConsentDecline">
+          Decline
+        </button>
+        <button type="button" id="monitoring-accept" data-i18n="monitoringConsentAccept">
+          Accept
+        </button>
+      </div>
+    </div>
+  </section>
 </body>
 </html>
