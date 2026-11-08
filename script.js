@@ -3,6 +3,7 @@ const results = document.querySelector("#results");
 const resultsMessage = document.querySelector("#results-message");
 const editAnswersButton = document.querySelector("#edit-answers");
 const findButton = document.querySelector("#find-button");
+const langSelect = document.querySelector("#lang-select");
 
 const API_URL = "https://ikigai-gemini-api.apenisoara.workers.dev";
 
@@ -10,7 +11,6 @@ const API_URL = "https://ikigai-gemini-api.apenisoara.workers.dev";
 // Create a widget that allows checkerandu.github.io and apenisoara.github.io.
 const TURNSTILE_SITE_KEY = "0x4AAAAAAF3zu4B_maR1YAyf";
 
-const BUTTON_LABEL = "Explore my Ikigai ↗";
 const RATE_STORAGE_KEY = "ikigai.rateLimit.v1";
 const CLIENT_ID_STORAGE_KEY = "ikigai.clientId.v1";
 
@@ -23,6 +23,8 @@ const CLIENT_DAILY_LIMIT = 8;
 let turnstileWidgetId = null;
 let cooldownTimerId = null;
 let requestInFlight = false;
+let currentLocale = I18N.defaultLocale;
+let resultsHoldCustomContent = false;
 
 /**
  * Stable anonymous browser session id (not IP). Shared NAT / firewall users
@@ -56,8 +58,7 @@ function initTurnstile() {
   if (!host || !window.turnstile) return;
 
   if (!TURNSTILE_SITE_KEY) {
-    host.innerHTML =
-      "<p class=\"turnstile-missing\">Add TURNSTILE_SITE_KEY in script.js after creating a Cloudflare Turnstile widget.</p>";
+    host.innerHTML = `<p class="turnstile-missing">${t("turnstileMissing", currentLocale)}</p>`;
     return;
   }
 
@@ -69,14 +70,14 @@ function initTurnstile() {
 
 function getTurnstileToken() {
   if (!TURNSTILE_SITE_KEY) {
-    throw new Error("Turnstile is not configured on this page yet.");
+    throw new Error(t("turnstileNotConfigured", currentLocale));
   }
   if (!window.turnstile || turnstileWidgetId === null) {
-    throw new Error("Human verification is still loading. Please try again in a moment.");
+    throw new Error(t("turnstileLoading", currentLocale));
   }
   const token = window.turnstile.getResponse(turnstileWidgetId);
   if (!token) {
-    throw new Error("Please complete the human verification check.");
+    throw new Error(t("turnstileRequired", currentLocale));
   }
   return token;
 }
@@ -161,8 +162,7 @@ function getGate(state = readRateState()) {
       ok: false,
       reason: "day",
       waitMs: 0,
-      message:
-        "You've reached today's exploration limit for this browser. Please come back tomorrow so others can try too."
+      message: t("dayLimitMessage", currentLocale)
     };
   }
 
@@ -172,15 +172,23 @@ function getGate(state = readRateState()) {
       ok: false,
       reason: "backoff",
       waitMs,
-      message: `Please wait ${formatWait(waitMs)} before exploring again. This keeps the shared AI quota available for first-time visitors.`
+      message: t("backoffMessage", currentLocale, { time: formatWait(waitMs) })
     };
   }
 
   return { ok: true, waitMs: 0, message: "" };
 }
 
-function setButtonIdleLabel(label = BUTTON_LABEL) {
-  findButton.textContent = label;
+function setFindButtonLabel(label, { withArrow = false } = {}) {
+  findButton.replaceChildren();
+  findButton.append(document.createTextNode(label));
+  if (withArrow) {
+    findButton.append(document.createTextNode(" "));
+    const arrow = document.createElement("span");
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "↗";
+    findButton.appendChild(arrow);
+  }
 }
 
 function syncButtonAvailability() {
@@ -189,18 +197,18 @@ function syncButtonAvailability() {
   const gate = getGate();
   if (!gate.ok && gate.reason === "backoff") {
     findButton.disabled = true;
-    setButtonIdleLabel(`Wait ${formatWait(gate.waitMs)}…`);
+    setFindButtonLabel(t("waitButton", currentLocale, { time: formatWait(gate.waitMs) }));
     return;
   }
 
   if (!gate.ok && gate.reason === "day") {
     findButton.disabled = true;
-    setButtonIdleLabel("Daily limit reached");
+    setFindButtonLabel(t("dailyLimitButton", currentLocale));
     return;
   }
 
   findButton.disabled = false;
-  setButtonIdleLabel(BUTTON_LABEL);
+  setFindButtonLabel(t("findButton", currentLocale), { withArrow: true });
 }
 
 function startCooldownTicker() {
@@ -270,12 +278,14 @@ function parseRetryAfter(response, data) {
 
 function showResultsMessage(text) {
   results.hidden = false;
+  resultsHoldCustomContent = true;
   resultsMessage.replaceChildren();
   resultsMessage.textContent = text;
   results.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderAnalysis(text) {
+  resultsHoldCustomContent = true;
   resultsMessage.replaceChildren();
 
   const lines = text.split(/\r?\n/);
@@ -317,8 +327,7 @@ function renderAnalysis(text) {
 
     // Recognise headings even if Gemini uses bold text instead of #.
     const isHeading =
-      line.length < 100 &&
-      /^(direction\s*\d*|why it fits|next step|small next step|summary|recommendation|your ikigai|possible direction)/i.test(line);
+      line.length < 100 && I18N.headingPattern.test(line);
 
     const element = document.createElement(isHeading ? "h3" : "p");
     element.textContent = line;
@@ -326,9 +335,22 @@ function renderAnalysis(text) {
   }
 }
 
+function setLocale(locale) {
+  currentLocale = applyTranslations(locale);
+  if (!resultsHoldCustomContent) {
+    resultsMessage.textContent = t("resultsPlaceholder", currentLocale);
+  }
+  syncButtonAvailability();
+}
+
 window.addEventListener("load", () => {
+  setLocale(getLocale());
   initTurnstile();
   startCooldownTicker();
+});
+
+langSelect?.addEventListener("change", () => {
+  setLocale(langSelect.value);
 });
 
 form.addEventListener("submit", async (event) => {
@@ -357,14 +379,15 @@ form.addEventListener("submit", async (event) => {
     good: form.elements.good.value.trim(),
     paid: form.elements.paid.value.trim(),
     world: form.elements.world.value.trim(),
+    lang: currentLocale,
     turnstileToken,
     clientId: getClientId()
   };
 
   requestInFlight = true;
   findButton.disabled = true;
-  findButton.textContent = "Exploring your Ikigai...";
-  showResultsMessage("Analysing your answers...");
+  setFindButtonLabel(t("exploring", currentLocale));
+  showResultsMessage(t("analysing", currentLocale));
 
   try {
     // Count the attempt before the network call so refresh/spam mid-flight still backs off.
@@ -382,18 +405,17 @@ form.addEventListener("submit", async (event) => {
     if (response.status === 429) {
       applyServerCooldown(retryAfter || Math.ceil(backoffMs(readRateState().streak) / 1000));
       throw new Error(
-        data.error ||
-          "Too many requests right now. Please wait a bit so the shared AI quota stays available."
+        data.error || t("tooManyRequests", currentLocale)
       );
     }
 
     if (!response.ok || data.error) {
       if (retryAfter) applyServerCooldown(retryAfter);
-      throw new Error(data.error || "Analysis failed.");
+      throw new Error(data.error || t("analysisFailed", currentLocale));
     }
 
     if (typeof data.result !== "string" || !data.result.trim()) {
-      throw new Error("Gemini returned an empty result.");
+      throw new Error(t("emptyResult", currentLocale));
     }
 
     // Keep a copy of the full response for debugging.
@@ -408,8 +430,7 @@ form.addEventListener("submit", async (event) => {
     showResultsMessage(
       error?.message && !/failed to fetch|networkerror/i.test(error.message)
         ? error.message
-        : "We couldn't complete your analysis. Please try again. " +
-          "If the problem continues, check the browser Console and Cloudflare Worker logs."
+        : t("networkError", currentLocale)
     );
   } finally {
     requestInFlight = false;
@@ -420,5 +441,7 @@ form.addEventListener("submit", async (event) => {
 
 editAnswersButton.addEventListener("click", () => {
   results.hidden = true;
+  resultsHoldCustomContent = false;
+  resultsMessage.textContent = t("resultsPlaceholder", currentLocale);
   document.querySelector("#love").focus();
 });

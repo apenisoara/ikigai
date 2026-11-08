@@ -33,7 +33,50 @@ button, textarea { font: inherit; }
 }
 .wordmark { color: var(--ink); text-decoration: none; font-size: 1.5rem; font-weight: 800; letter-spacing: -.07em; }
 .wordmark span { color: var(--purple); }
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 .header-note, .time-note { color: var(--muted); font-size: .88rem; }
+.lang-picker select {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  padding: 8px 34px 8px 14px;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% - 2px),
+    calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.lang-picker select:focus-visible {
+  outline: 3px solid rgba(85, 126, 232, .28);
+  outline-offset: 2px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .page-shell { width: min(100% - 40px, 1000px); margin: 0 auto; }
 .intro { max-width: 760px; margin: 58px auto 62px; text-align: center; }
 .eyebrow { margin: 0 0 12px; color: var(--blue); font-size: .72rem; font-weight: 800; letter-spacing: .16em; }
@@ -76,6 +119,7 @@ button span { padding-left: 8px; }
 
 @media (max-width: 680px) {
   .site-header { padding: 20px 4px; }
+  .header-tools { gap: 10px; max-width: 210px; }
   .header-note { max-width: 170px; text-align: right; font-size: .78rem; }
   .page-shell { width: min(100% - 28px, 1000px); }
   .intro { margin: 42px auto 40px; }
