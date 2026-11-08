@@ -138,8 +138,8 @@
     <footer class="site-footer">
       <span data-i18n="footerCredit">Made by CheckerAndu and DaredCentaur802.</span>
       <span class="footer-meta">
-        <a href="privacy.html">Privacy</a>
-        <button type="button" id="monitoring-settings" class="text-button" hidden>
+        <a href="privacy.html" data-i18n="footerPrivacy">Privacy</a>
+        <button type="button" id="monitoring-settings" class="text-button" hidden data-i18n="analyticsPreferences">
           Analytics preferences
         </button>
         <span id="app-version" class="app-version" hidden></span>
@@ -153,19 +153,17 @@
            aria-modal="false">
     <div class="monitoring-consent-inner">
       <div class="monitoring-consent-copy">
-        <h2 id="monitoring-consent-title">Site analytics and performance</h2>
+        <h2 id="monitoring-consent-title" data-i18n="monitoringConsentTitle">Site analytics and performance</h2>
         <p>
-          To keep this site fast and reliable, we’d like to collect anonymous
-          analytics about page visits, interactions, performance, and errors.
-          This is optional and helps us improve your experience.
-          <a href="privacy.html">Learn more</a>
+          <span data-i18n="monitoringConsentCopy">To keep this site fast and reliable, we’d like to collect anonymous analytics about page visits, interactions, performance, and errors. This is optional and helps us improve your experience.</span>
+          <a href="privacy.html" data-i18n="monitoringConsentLearnMore">Learn more</a>
         </p>
       </div>
       <div class="monitoring-consent-actions">
-        <button type="button" id="monitoring-reject" class="secondary-button">
+        <button type="button" id="monitoring-reject" class="secondary-button" data-i18n="monitoringConsentDecline">
           Decline
         </button>
-        <button type="button" id="monitoring-accept">
+        <button type="button" id="monitoring-accept" data-i18n="monitoringConsentAccept">
           Accept
         </button>
       </div>
