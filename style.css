@@ -63,7 +63,8 @@ textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(85, 126, 
 .turnstile-widget { min-height: 65px; }
 .turnstile-missing { margin: 0; max-width: 260px; color: var(--muted); font-size: .8rem; line-height: 1.45; text-align: right; }
 button { cursor: pointer; border: 0; border-radius: 999px; padding: 14px 22px; background: var(--ink); color: white; font-weight: 700; transition: transform .18s ease, background .18s ease; }
-button:hover { transform: translateY(-2px); background: #39446f; }
+button:hover:not(:disabled) { transform: translateY(-2px); background: #39446f; }
+button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
 button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 button span { padding-left: 8px; }
 .results { margin: 26px 0 0; padding: 28px; border: 1px solid #dce2f5; border-radius: var(--radius); background: #fff; }
