@@ -378,8 +378,24 @@ function writeStoredLocale(locale) {
   }
 }
 
+function readUrlLocale() {
+  try {
+    const param = new URLSearchParams(window.location.search).get("lang");
+    if (!param) return null;
+    const base = String(param)
+      .trim()
+      .toLowerCase()
+      .replace("_", "-")
+      .split("-")[0];
+    return I18N.supported.includes(base) ? base : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Priority: ?lang= → saved choice → browser language → en */
 function getLocale() {
-  return readStoredLocale() || detectBrowserLocale();
+  return readUrlLocale() || readStoredLocale() || detectBrowserLocale();
 }
 
 function t(key, locale = getLocale(), vars = {}) {
