@@ -7,6 +7,7 @@
   <title>Ikigai Finder — Find your Ikigai</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+  <script src="app-version.js" defer></script>
   <script src="datadog-rum-init.js" defer></script>
   <script src="i18n.js" defer></script>
   <script src="script.js" defer></script>
@@ -136,7 +137,10 @@
 
     <footer class="site-footer">
       <span data-i18n="footerCredit">Made by CheckerAndu and DaredCentaur802.</span>
-      <span data-i18n="footerTagline">Explore. Discover. Grow.</span>
+      <span class="footer-meta">
+        <span data-i18n="footerTagline">Explore. Discover. Grow.</span>
+        <span id="app-version" class="app-version" hidden></span>
+      </span>
     </footer>
   </main>
 </body>

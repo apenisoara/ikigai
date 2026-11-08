@@ -44,7 +44,7 @@
 
         service: 'github-pages-site',
         env: 'local-browser-debug',
-        version: '0.2.0',
+        version: (window.__IKIGAI_APP__ && window.__IKIGAI_APP__.version) || 'dev',
 
         allowedTrackingOrigins: [
             'https://apenisoara.github.io'

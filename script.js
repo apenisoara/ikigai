@@ -343,8 +343,17 @@ function setLocale(locale) {
   syncButtonAvailability();
 }
 
+function showAppVersion() {
+  const el = document.querySelector("#app-version");
+  const version = window.__IKIGAI_APP__?.version;
+  if (!el || !version) return;
+  el.textContent = `v${version}`;
+  el.hidden = false;
+}
+
 window.addEventListener("load", () => {
   setLocale(getLocale());
+  showAppVersion();
   initTurnstile();
   startCooldownTicker();
 });

@@ -115,6 +115,14 @@ button span { padding-left: 8px; }
 .secondary-button { background: #eef1fb; color: var(--ink); }
 .secondary-button:hover { background: #e2e7f8; }
 .site-footer { display: flex; justify-content: space-between; gap: 16px; padding: 30px 4px 38px; color: #8990a5; font-size: .8rem; }
+.footer-meta { display: flex; align-items: baseline; gap: 10px; }
+.app-version {
+  color: #a8aebf;
+  font-size: .7rem;
+  letter-spacing: .02em;
+  font-variant-numeric: tabular-nums;
+  user-select: text;
+}
 [hidden] { display: none !important; }
 
 @media (max-width: 680px) {
