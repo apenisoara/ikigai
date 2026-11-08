@@ -8,26 +8,39 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <script src="datadog-rum-init.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
   <header class="site-header">
-    <a class="wordmark" href="#" aria-label="Ikigai Finder home">ikigai<span>.</span>finder</a>
-    <span class="header-note">Finding reason, one question at a time.</span>
+    <a class="wordmark" href="#" data-i18n-aria="wordmarkAria">ikigai<span>.</span>finder</a>
+    <div class="header-tools">
+      <label class="lang-picker">
+        <span class="visually-hidden" data-i18n="langLabel">Language</span>
+        <select id="lang-select" name="lang">
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Français</option>
+          <option value="ro">Română</option>
+        </select>
+      </label>
+      <span class="header-note" data-i18n="headerNote">Finding reason, one question at a time.</span>
+    </div>
   </header>
 
   <main class="page-shell">
-   
-    
+
+
     <section class="diagram-section" aria-labelledby="diagram-title">
-      <p class="eyebrow">THE FOUR PILLARS</p>
-      <h2 id="diagram-title">Where everything connects</h2>
-      <p class="diagram-description">
+      <p class="eyebrow" data-i18n="diagramEyebrow">THE FOUR PILLARS</p>
+      <h2 id="diagram-title" data-i18n="diagramTitle">Where everything connects</h2>
+      <p class="diagram-description" data-i18n="diagramDescription">
         Explore the four parts of your Ikigai.
       </p>
 
       <div class="ikigai-diagram"
            role="img"
+           data-i18n-aria="diagramAria"
            aria-label="Four overlapping circles representing what you love,
            what you are good at, what you can be paid for,
            and what the world needs, meeting at Ikigai.">
@@ -39,19 +52,19 @@
         <div class="circle circle-paid" aria-hidden="true"></div>
 
         <!-- Labels placed above the circles -->
-        <span class="diagram-label label-love">
+        <span class="diagram-label label-love" data-i18n-html="labelLoveHtml">
           WHAT YOU<br><strong>LOVE</strong>
         </span>
 
-        <span class="diagram-label label-good">
+        <span class="diagram-label label-good" data-i18n-html="labelGoodHtml">
           WHAT YOU ARE<br><strong>GOOD AT</strong>
         </span>
 
-        <span class="diagram-label label-world">
+        <span class="diagram-label label-world" data-i18n-html="labelWorldHtml">
           WHAT THE WORLD<br><strong>NEEDS</strong>
         </span>
 
-        <span class="diagram-label label-paid">
+        <span class="diagram-label label-paid" data-i18n-html="labelPaidHtml">
           WHAT YOU CAN BE<br><strong>PAID FOR</strong>
         </span>
 
@@ -60,70 +73,70 @@
     </section>
 
      <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">FIND YOUR IKIGAI</p>
-      <h1 id="page-title">Find the things that <em>make you, you.</em></h1>
-      <p class="intro-copy">Find the very reason, you get out of your bed everyday.</p>
+      <p class="eyebrow" data-i18n="introEyebrow">FIND YOUR IKIGAI</p>
+      <h1 id="page-title" data-i18n-html="pageHeadingHtml">Find the things that <em>make you, you.</em></h1>
+      <p class="intro-copy" data-i18n="introCopy">Find the very reason, you get out of your bed everyday.</p>
     </section>
 
     <form id="ikigai-form" class="questionnaire">
 
       <div class="form-heading">
         <div>
-          <p class="eyebrow">FOUR QUESTIONS</p>
-          <h2>Start with yourself</h2>
+          <p class="eyebrow" data-i18n="formEyebrow">FOUR QUESTIONS</p>
+          <h2 data-i18n="formTitle">Start with yourself</h2>
         </div>
-        <p class="time-note">There are no wrong answers.</p>
+        <p class="time-note" data-i18n="timeNote">There are no wrong answers.</p>
       </div>
 
       <div class="question-grid">
         <label class="question-card love" for="love">
-          <span class="question-number">01 / LOVE</span>
-          <span class="question-title">What do you love to do?</span>
-          <span class="question-hint">What makes you curious, excited, or so engaged that makes you experience flow, and make lose track of time?</span>
-          <textarea id="love" name="love" rows="5" minlength="3" required placeholder="I love learning how things work, designing things, writing things, helping people…"></textarea>
+          <span class="question-number" data-i18n="q1Number">01 / LOVE</span>
+          <span class="question-title" data-i18n="q1Title">What do you love to do?</span>
+          <span class="question-hint" data-i18n="q1Hint">What makes you curious, excited, or so engaged that makes you experience flow, and make lose track of time?</span>
+          <textarea id="love" name="love" rows="5" minlength="3" required data-i18n-placeholder="q1Placeholder" placeholder="I love learning how things work, designing things, writing things, helping people…"></textarea>
         </label>
 
         <label class="question-card good" for="good">
-          <span class="question-number">02 / STRENGTHS</span>
-          <span class="question-title">What are you good at?</span>
-          <span class="question-hint">Think about skills, subjects, qualities, and things others ask you for help with.</span>
-          <textarea id="good" name="good" rows="5" minlength="3" required placeholder="I'm good at solving problems, explaining ideas, explaining different things, building things…"></textarea>
+          <span class="question-number" data-i18n="q2Number">02 / STRENGTHS</span>
+          <span class="question-title" data-i18n="q2Title">What are you good at?</span>
+          <span class="question-hint" data-i18n="q2Hint">Think about skills, subjects, qualities, and things others ask you for help with.</span>
+          <textarea id="good" name="good" rows="5" minlength="3" required data-i18n-placeholder="q2Placeholder" placeholder="I'm good at solving problems, explaining ideas, explaining different things, building things…"></textarea>
         </label>
 
         <label class="question-card paid" for="paid">
-          <span class="question-number">03 / WORK</span>
-          <span class="question-title">What could you be paid for?</span>
-          <span class="question-hint">Which skills or interests could you be paid for?</span>
-          <textarea id="paid" name="paid" rows="5" minlength="3" required placeholder="I could invent new things, tutor students/people, repair equipment…"></textarea>
+          <span class="question-number" data-i18n="q3Number">03 / WORK</span>
+          <span class="question-title" data-i18n="q3Title">What could you be paid for?</span>
+          <span class="question-hint" data-i18n="q3Hint">Which skills or interests could you be paid for?</span>
+          <textarea id="paid" name="paid" rows="5" minlength="3" required data-i18n-placeholder="q3Placeholder" placeholder="I could invent new things, tutor students/people, repair equipment…"></textarea>
         </label>
 
         <label class="question-card world" for="world">
-          <span class="question-number">04 / FOR THE WORLD</span>
-          <span class="question-title">What does the world need?</span>
-          <span class="question-hint">What problems would you like to help solve? What would you like to improve? What could improve our world?</span>
-          <textarea id="world" name="world" rows="5" minlength="3" required placeholder="The world needs clearer education, useful technology, more scientific understanding, more connection…"></textarea>
+          <span class="question-number" data-i18n="q4Number">04 / FOR THE WORLD</span>
+          <span class="question-title" data-i18n="q4Title">What does the world need?</span>
+          <span class="question-hint" data-i18n="q4Hint">What problems would you like to help solve? What would you like to improve? What could improve our world?</span>
+          <textarea id="world" name="world" rows="5" minlength="3" required data-i18n-placeholder="q4Placeholder" placeholder="The world needs clearer education, useful technology, more scientific understanding, more connection…"></textarea>
         </label>
       </div>
 
       <div class="form-footer">
-        <p>Your answers are a starting point, not a life-long label.</p>
+        <p data-i18n="formFooter">Your answers are a starting point, not a life-long label.</p>
         <div class="form-actions">
-          <div id="turnstile-widget" class="turnstile-widget" aria-label="Human verification"></div>
-          <button type="submit" id="find-button">Explore my Ikigai <span aria-hidden="true">↗</span></button>
+          <div id="turnstile-widget" class="turnstile-widget" data-i18n-aria="turnstileAria" aria-label="Human verification"></div>
+          <button type="submit" id="find-button"><span data-i18n="findButton">Explore my Ikigai</span> <span aria-hidden="true">↗</span></button>
         </div>
       </div>
     </form>
 
     <section id="results" class="results" aria-live="polite" aria-labelledby="results-title" hidden>
-      <p class="eyebrow">YOUR NEXT STEP</p>
-      <h2 id="results-title">Your answers are ready</h2>
-      <p id="results-message">The page is set up. The AI analysis still needs to be connected through a secure server endpoint.</p>
-      <button type="button" class="secondary-button" id="edit-answers">Edit my answers</button>
+      <p class="eyebrow" data-i18n="resultsEyebrow">YOUR NEXT STEP</p>
+      <h2 id="results-title" data-i18n="resultsTitle">Your answers are ready</h2>
+      <p id="results-message" data-i18n="resultsPlaceholder">The page is set up. The AI analysis still needs to be connected through a secure server endpoint.</p>
+      <button type="button" class="secondary-button" id="edit-answers" data-i18n="editAnswers">Edit my answers</button>
     </section>
 
     <footer class="site-footer">
-      <span>Made by CheckerAndu.</span>
-      <span>Explore. Discover. Grow.</span>
+      <span data-i18n="footerCredit">Made by CheckerAndu and DaredCentaur802.</span>
+      <span data-i18n="footerTagline">Explore. Discover. Grow.</span>
     </footer>
   </main>
 </body>
