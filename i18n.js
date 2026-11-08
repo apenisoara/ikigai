@@ -196,7 +196,7 @@ const I18N = {
       formEyebrow: "QUATRE QUESTIONS",
       formTitle: "Commencez par vous-même",
       timeNote: "Il n'y a pas de mauvaises réponses.",
-      q1Number: "01 / AMOUR",
+      q1Number: "01 / AIMER",
       q1Title: "Qu'aimez-vous faire ?",
       q1Hint:
         "Qu'est-ce qui vous rend curieux, enthousiaste, ou si absorbé que vous perdez la notion du temps ?",
