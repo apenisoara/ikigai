@@ -259,7 +259,7 @@ const I18N = {
       wordmarkAria: "Acasă Ikigai Finder",
       headerNote: "Găsirea sensului, o întrebare pe rând.",
       langLabel: "Limbă",
-      diagramEyebrow: "CELE PATRU PILIERI",
+      diagramEyebrow: "CEI PATRU STALPI",
       diagramTitle: "Unde totul se leagă",
       diagramDescription: "Explorează cele patru părți ale Ikigai-ului tău.",
       diagramAria:
@@ -269,12 +269,12 @@ const I18N = {
       labelWorldHtml: "DE CE ARE NEVOIE<br><strong>LUMEA</strong>",
       labelPaidHtml: "PENTRU CE POȚI FI<br><strong>PLĂTIT</strong>",
       introEyebrow: "GĂSEȘTE-ȚI IKIGAI",
-      pageHeadingHtml: "Găsește lucrurile care <em>te fac pe tine, pe tine.</em>",
+      pageHeadingHtml: "Găsește lucrurile care <br><em>te fac sa fii tu insuți.</em>",
       introCopy: "Găsește motivul pentru care te ridici din pat în fiecare zi.",
       formEyebrow: "PATRU ÎNTREBĂRI",
       formTitle: "Începe cu tine",
       timeNote: "Nu există răspunsuri greșite.",
-      q1Number: "01 / DRAGOSTE",
+      q1Number: "01 / CE IUBEȘTI",
       q1Title: "Ce îți place să faci?",
       q1Hint:
         "Ce te face curios, entuziasmat sau atât de absorbit încât uiți de timp?",
