@@ -12,6 +12,7 @@ const TURNSTILE_SITE_KEY = "0x4AAAAAAF3zu4B_maR1YAyf";
 
 const BUTTON_LABEL = "Explore my Ikigai ↗";
 const RATE_STORAGE_KEY = "ikigai.rateLimit.v1";
+const CLIENT_ID_STORAGE_KEY = "ikigai.clientId.v1";
 
 // First request is free; each later request waits longer (shared Gemini quota).
 const BACKOFF_BASE_MS = 30_000;
@@ -22,6 +23,33 @@ const CLIENT_DAILY_LIMIT = 8;
 let turnstileWidgetId = null;
 let cooldownTimerId = null;
 let requestInFlight = false;
+
+/**
+ * Stable anonymous browser session id (not IP). Shared NAT / firewall users
+ * each get their own limit bucket as long as localStorage persists.
+ */
+function getClientId() {
+  try {
+    const existing = localStorage.getItem(CLIENT_ID_STORAGE_KEY);
+    if (existing && /^[A-Za-z0-9_-]{16,128}$/.test(existing)) {
+      return existing;
+    }
+  } catch {
+    // Fall through and create an in-memory id for this page load.
+  }
+
+  const id =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID().replace(/-/g, "")
+      : `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 14)}`;
+
+  try {
+    localStorage.setItem(CLIENT_ID_STORAGE_KEY, id);
+  } catch {
+    // Private mode may block persistence; id still works for this tab session.
+  }
+  return id;
+}
 
 function initTurnstile() {
   const host = document.querySelector("#turnstile-widget");
@@ -329,7 +357,8 @@ form.addEventListener("submit", async (event) => {
     good: form.elements.good.value.trim(),
     paid: form.elements.paid.value.trim(),
     world: form.elements.world.value.trim(),
-    turnstileToken
+    turnstileToken,
+    clientId: getClientId()
   };
 
   requestInFlight = true;
