@@ -50,6 +50,17 @@
             'https://apenisoara.github.io'
         ],
 
+        // Connect browser resources to Worker APM traces (W3C Trace Context).
+        // The Worker continues these headers and exports OTLP spans to Datadog.
+        // https://docs.datadoghq.com/real_user_monitoring/correlate_with_other_telemetry/apm/
+        allowedTracingUrls: [
+            {
+                match: 'https://ikigai-gemini-api.apenisoara.workers.dev',
+                propagatorTypes: ['tracecontext']
+            }
+        ],
+        traceSampleRate: 100,
+
         sessionSampleRate: 100,
         sessionReplaySampleRate: 100,
 
