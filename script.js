@@ -236,6 +236,7 @@ function setFindButtonLabel(label, { withArrow = false } = {}) {
     findButton.append(document.createTextNode(" "));
     const arrow = document.createElement("span");
     arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "↗";
     findButton.appendChild(arrow);
   }
 }
