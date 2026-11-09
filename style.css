@@ -112,6 +112,19 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 button span { padding-left: 8px; }
 .results { margin: 26px 0 0; padding: 28px; border: 1px solid #dce2f5; border-radius: var(--radius); background: #fff; }
 .results p:not(.eyebrow) { color: var(--muted); }
+.results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.save-results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.print-only { display: none; }
 .secondary-button { background: #eef1fb; color: var(--ink); }
 .secondary-button:hover:not(:disabled) { background: #e2e7f8; }
 .text-button {
@@ -212,6 +225,9 @@ body:has(#monitoring-consent:not([hidden])) {
   .time-note { margin-bottom: 0; }
   .form-actions { align-items: stretch; }
   .form-footer button { width: 100%; }
+  .results-actions,
+  .save-results-actions { flex-direction: column; align-items: stretch; }
+  .results-actions button { width: 100%; }
   .site-footer { flex-direction: column; gap: 4px; }
   .monitoring-consent-inner {
     flex-direction: column;
@@ -373,6 +389,82 @@ body:has(#monitoring-consent:not([hidden])) {
 
 #results-message li {
   margin-bottom: 0.5rem;
+}
+
+@media print {
+  @page {
+    margin: 1.4cm;
+  }
+
+  body {
+    background: #fff;
+    color: #111;
+  }
+
+  .site-header,
+  .diagram-section,
+  .intro,
+  .questionnaire,
+  .site-footer,
+  .monitoring-consent,
+  .results-actions,
+  .lang-picker,
+  .header-tools {
+    display: none !important;
+  }
+
+  .page-shell {
+    width: 100%;
+    margin: 0;
+  }
+
+  .results {
+    display: block !important;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .print-brand {
+    margin: 0 0 18px;
+    color: #202642;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -.07em;
+  }
+
+  .print-brand span {
+    color: #8a69d6;
+  }
+
+  .results .eyebrow {
+    color: #557ee8;
+  }
+
+  .results h2,
+  #results-message,
+  #results-message p,
+  #results-message li {
+    color: #202642;
+  }
+
+  #results-message h3 {
+    color: #202642;
+    break-after: avoid;
+  }
+
+  #results-message p,
+  #results-message li {
+    orphans: 3;
+    widows: 3;
+  }
 }
 
 /* Privacy / legal pages */

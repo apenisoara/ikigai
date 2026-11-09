@@ -71,6 +71,12 @@ const I18N = {
       resultsTitle: "Your answers are ready",
       resultsPlaceholder:
         "The page is set up. The AI analysis still needs to be connected through a secure server endpoint.",
+      printResults: "Print or save as PDF",
+      emailResults: "Email my results",
+      emailSubject: "My Ikigai results",
+      emailBodyIntro: "Here are my Ikigai exploration results:",
+      emailBodyTruncated:
+        "\n\n(The full results were too long for email. Please use Print or save as PDF for the complete text.)",
       editAnswers: "Edit my answers",
       footerCredit: "Made by CheckerAndu and DaredCentaur802.",
       footerPrivacy: "Privacy",
@@ -156,6 +162,12 @@ const I18N = {
       resultsTitle: "Deine Antworten sind bereit",
       resultsPlaceholder:
         "Die Seite ist eingerichtet. Die KI-Analyse muss noch über einen sicheren Server-Endpunkt verbunden werden.",
+      printResults: "Drucken oder als PDF speichern",
+      emailResults: "Ergebnisse per E-Mail senden",
+      emailSubject: "Meine Ikigai-Ergebnisse",
+      emailBodyIntro: "Hier sind meine Ikigai-Ergebnisse:",
+      emailBodyTruncated:
+        "\n\n(Die vollständigen Ergebnisse waren zu lang für eine E-Mail. Bitte nutze Drucken oder als PDF speichern für den kompletten Text.)",
       editAnswers: "Antworten bearbeiten",
       footerCredit: "Erstellt von CheckerAndu und DaredCentaur802.",
       footerPrivacy: "Datenschutz",
@@ -241,6 +253,12 @@ const I18N = {
       resultsTitle: "Vos réponses sont prêtes",
       resultsPlaceholder:
         "La page est prête. L'analyse IA doit encore être connectée via un point d'accès serveur sécurisé.",
+      printResults: "Imprimer ou enregistrer en PDF",
+      emailResults: "M'envoyer les résultats",
+      emailSubject: "Mes résultats Ikigai",
+      emailBodyIntro: "Voici les résultats de mon exploration Ikigai :",
+      emailBodyTruncated:
+        "\n\n(Les résultats complets étaient trop longs pour l'e-mail. Utilisez Imprimer ou enregistrer en PDF pour le texte entier.)",
       editAnswers: "Modifier mes réponses",
       footerCredit: "Créé par CheckerAndu et DaredCentaur802.",
       footerPrivacy: "Confidentialité",
@@ -326,6 +344,12 @@ const I18N = {
       resultsTitle: "Răspunsurile tale sunt gata",
       resultsPlaceholder:
         "Pagina este pregătită. Analiza AI trebuie încă conectată printr-un endpoint securizat pe server.",
+      printResults: "Printează sau salvează ca PDF",
+      emailResults: "Trimite rezultatele pe e-mail",
+      emailSubject: "Rezultatele mele Ikigai",
+      emailBodyIntro: "Iată rezultatele explorării mele Ikigai:",
+      emailBodyTruncated:
+        "\n\n(Rezultatele complete au fost prea lungi pentru e-mail. Folosește Printează sau salvează ca PDF pentru textul întreg.)",
       editAnswers: "Editează răspunsurile",
       footerCredit: "Creat de CheckerAndu și DaredCentaur802.",
       footerPrivacy: "Confidențialitate",

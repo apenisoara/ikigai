@@ -129,10 +129,21 @@
     </form>
 
     <section id="results" class="results" aria-live="polite" aria-labelledby="results-title" hidden>
+      <p class="print-only print-brand">ikigai<span>.</span>finder</p>
       <p class="eyebrow" data-i18n="resultsEyebrow">YOUR NEXT STEP</p>
       <h2 id="results-title" data-i18n="resultsTitle">Your answers are ready</h2>
-      <p id="results-message" data-i18n="resultsPlaceholder">The page is set up. The AI analysis still needs to be connected through a secure server endpoint.</p>
-      <button type="button" class="secondary-button" id="edit-answers" data-i18n="editAnswers">Edit my answers</button>
+      <div id="results-message" data-i18n="resultsPlaceholder">The page is set up. The AI analysis still needs to be connected through a secure server endpoint.</div>
+      <div class="results-actions">
+        <div id="save-results-actions" class="save-results-actions" hidden>
+          <button type="button" id="print-results" class="secondary-button" data-i18n="printResults">
+            Print or save as PDF
+          </button>
+          <button type="button" id="email-results" class="secondary-button" data-i18n="emailResults">
+            Email my results
+          </button>
+        </div>
+        <button type="button" class="secondary-button" id="edit-answers" data-i18n="editAnswers">Edit my answers</button>
+      </div>
     </section>
 
     <footer class="site-footer">
