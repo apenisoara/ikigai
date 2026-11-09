@@ -25,6 +25,11 @@ const CLIENT_DAILY_LIMIT = 8;
 // Many mail clients truncate mailto: URLs around this size.
 const EMAIL_BODY_MAX_CHARS = 1600;
 
+const RUM_ACTION_REQUESTED = "ikigai_analysis_requested";
+const RUM_ACTION_COMPLETED = "ikigai_analysis_completed";
+const RUM_ACTION_FAILED = "ikigai_analysis_failed";
+const RUM_TIMING_ANALYSIS = "ikigai_analysis_duration";
+
 let turnstileWidgetId = null;
 let cooldownTimerId = null;
 let requestInFlight = false;
@@ -43,7 +48,7 @@ function getClientId() {
       return existing;
     }
   } catch {
-    // Fall through and create an in-memory id for this page load.
+    // Fall through and create an in-memory id for the page load.
   }
 
   const id =
@@ -57,6 +62,45 @@ function getClientId() {
     // Private mode may block persistence; id still works for this tab session.
   }
   return id;
+}
+
+async function hashClientId(clientId) {
+  if (!clientId) return null;
+
+  try {
+    const data = new TextEncoder().encode(clientId);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+
+    return Array.from(new Uint8Array(digest))
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("");
+  } catch {
+    return null;
+  }
+}
+
+function recordRumAction(name, metadata = {}) {
+  try {
+    window.DD_RUM?.addAction(name, metadata);
+  } catch {
+    // Telemetry must never break the user flow.
+  }
+}
+
+function startRumAnalysisTiming() {
+  try {
+    window.DD_RUM?.startDurationTiming?.(RUM_TIMING_ANALYSIS);
+  } catch {
+    // Telemetry must never break the user flow.
+  }
+}
+
+function stopRumAnalysisTiming() {
+  try {
+    window.DD_RUM?.stopDurationTiming?.(RUM_TIMING_ANALYSIS);
+  } catch {
+    // Telemetry must never break the user flow.
+  }
 }
 
 function initTurnstile() {
@@ -435,6 +479,17 @@ form.addEventListener("submit", async (event) => {
     clientId: getClientId()
   };
 
+  const analysisStartedAt = performance.now();
+  const clientIdHash = await hashClientId(answers.clientId);
+
+  recordRumAction(RUM_ACTION_REQUESTED, {
+    locale: currentLocale,
+    client_id_hash: clientIdHash,
+    client_daily_limit: CLIENT_DAILY_LIMIT
+  });
+
+  startRumAnalysisTiming();
+
   requestInFlight = true;
   findButton.disabled = true;
   setFindButtonLabel(t("exploring", currentLocale));
@@ -454,6 +509,12 @@ form.addEventListener("submit", async (event) => {
     const retryAfter = parseRetryAfter(response, data);
 
     if (response.status === 429) {
+      recordRumAction(RUM_ACTION_FAILED, {
+        status: "rate_limited",
+        http_status: response.status,
+        retry_after_seconds: retryAfter || null
+      });
+
       applyServerCooldown(retryAfter || Math.ceil(backoffMs(readRateState().streak) / 1000));
       throw new Error(
         data.error || t("tooManyRequests", currentLocale)
@@ -461,22 +522,43 @@ form.addEventListener("submit", async (event) => {
     }
 
     if (!response.ok || data.error) {
+      recordRumAction(RUM_ACTION_FAILED, {
+        status: "api_error",
+        http_status: response.status,
+        error_type: "api_error"
+      });
+
       if (retryAfter) applyServerCooldown(retryAfter);
       throw new Error(data.error || t("analysisFailed", currentLocale));
     }
 
     if (typeof data.result !== "string" || !data.result.trim()) {
+      recordRumAction(RUM_ACTION_FAILED, {
+        status: "empty_response",
+        http_status: response.status
+      });
+
       throw new Error(t("emptyResult", currentLocale));
     }
 
-    // Keep a copy of the full response for debugging.
-    console.log("Full Gemini response:", data.result);
-    console.log("Response length:", data.result.length);
+    recordRumAction(RUM_ACTION_COMPLETED, {
+      status: "success",
+      http_status: response.status,
+      response_length: data.result.length,
+      duration_ms: Math.round(performance.now() - analysisStartedAt)
+    });
+
+    stopRumAnalysisTiming();
 
     results.hidden = false;
     renderAnalysis(data.result);
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
+    recordRumAction(RUM_ACTION_FAILED, {
+      status: "network_or_client_error",
+      error_name: error?.name || "Error"
+    });
+
     console.error("Ikigai request failed:", error);
     showResultsMessage(
       error?.message && !/failed to fetch|networkerror/i.test(error.message)
