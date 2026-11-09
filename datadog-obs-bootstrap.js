@@ -1,4 +1,28 @@
+/**
+ * Site-wide Datadog observability bootstrap.
+ *
+ * Include on every HTML page:
+ *   <script src="app-version.js" defer></script>
+ *   <script type="module" src="datadog-obs-bootstrap.js"></script>
+ *
+ * Consent UI is reused when the page already has it, otherwise it is injected.
+ */
 const LOG_PREFIX = '[Datadog Obs]';
+
+function loadClassicScript(src) {
+  return new Promise(resolve => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => resolve();
+    document.head.appendChild(script);
+  });
+}
+
+async function ensureAppVersion() {
+  if (window.__IKIGAI_APP__) return;
+  await loadClassicScript(new URL('./app-version.js', import.meta.url).href);
+}
 
 function withTimeout(fetchFn, timeoutMs) {
   return (input, init) => {
@@ -14,6 +38,8 @@ function withTimeout(fetchFn, timeoutMs) {
 
 async function bootstrap() {
   try {
+    await ensureAppVersion();
+
     // Third-party ESM CDN; no local npm/build step.
     const [{ DatadogProvider }, { OpenFeature }] = await Promise.all([
       import('https://esm.sh/@datadog/openfeature-browser@2'),
@@ -57,8 +83,7 @@ async function bootstrap() {
       await import('./datadog-obs-consent.js');
 
     initializeMonitoringConsent();
-
-} catch (error) {
+  } catch (error) {
     // A flag/CDN failure must not break the website.
     console.warn(LOG_PREFIX, 'RUM not loaded: flag initialization failed.', error);
   }

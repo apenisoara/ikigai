@@ -1,8 +1,37 @@
 const STORAGE_KEY = 'ikigai-website:monitoring-consent:v1';
+const PRIVACY_HREF = 'privacy.html#optional-monitoring';
+
+const FALLBACK_COPY = {
+  analyticsPreferences: 'Analytics preferences',
+  monitoringConsentTitle: 'Site analytics and performance',
+  monitoringConsentCopy:
+    'To keep this site fast and reliable, we’d like to collect anonymous analytics about page visits, interactions, performance, and errors. This is optional and helps us improve your experience.',
+  monitoringConsentLearnMore: 'Learn more',
+  monitoringConsentAccept: 'Accept',
+  monitoringConsentDecline: 'Decline'
+};
 
 let initialized = false;
 let choice = null;
 let rumLoadPromise = null;
+
+function copy(key) {
+  if (typeof window.t === 'function') {
+    try {
+      return window.t(key);
+    } catch {
+      // Use the English fallback below.
+    }
+  }
+  return FALLBACK_COPY[key] || key;
+}
+
+function applyCopy(root) {
+  root.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key) el.textContent = copy(key);
+  });
+}
 
 function readChoice() {
   try {
@@ -56,19 +85,77 @@ function loadRum() {
   }
 }
 
+function ensureSettingsButton() {
+  let settings = document.querySelector('#monitoring-settings');
+  if (settings) return settings;
+
+  settings = document.createElement('button');
+  settings.type = 'button';
+  settings.id = 'monitoring-settings';
+  settings.className = 'text-button';
+  settings.hidden = true;
+  settings.setAttribute('data-i18n', 'analyticsPreferences');
+  settings.textContent = copy('analyticsPreferences');
+
+  const footerMeta = document.querySelector('.footer-meta');
+  if (footerMeta) {
+    const version = footerMeta.querySelector('#app-version');
+    footerMeta.insertBefore(settings, version);
+  } else {
+    const footer = document.querySelector('.site-footer');
+    (footer || document.body).appendChild(settings);
+  }
+
+  return settings;
+}
+
+function ensureConsentPanel() {
+  let panel = document.querySelector('#monitoring-consent');
+  if (panel) return panel;
+
+  panel = document.createElement('section');
+  panel.id = 'monitoring-consent';
+  panel.className = 'monitoring-consent';
+  panel.hidden = true;
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'false');
+  panel.setAttribute('aria-labelledby', 'monitoring-consent-title');
+  panel.innerHTML = `
+    <div class="monitoring-consent-inner">
+      <div class="monitoring-consent-copy">
+        <h2 id="monitoring-consent-title" data-i18n="monitoringConsentTitle"></h2>
+        <p>
+          <span data-i18n="monitoringConsentCopy"></span>
+          <a href="${PRIVACY_HREF}" data-i18n="monitoringConsentLearnMore"></a>
+        </p>
+      </div>
+      <div class="monitoring-consent-actions">
+        <button type="button" id="monitoring-reject" class="secondary-button" data-i18n="monitoringConsentDecline"></button>
+        <button type="button" id="monitoring-accept" data-i18n="monitoringConsentAccept"></button>
+      </div>
+    </div>
+  `;
+  applyCopy(panel);
+  document.body.appendChild(panel);
+  return panel;
+}
+
+function ensureConsentUi() {
+  const panel = ensureConsentPanel();
+  const settings = ensureSettingsButton();
+  return {
+    panel,
+    settings,
+    accept: document.querySelector('#monitoring-accept'),
+    reject: document.querySelector('#monitoring-reject')
+  };
+}
+
 export function initializeMonitoringConsent() {
   if (initialized) return;
   initialized = true;
 
-  const panel = document.querySelector('#monitoring-consent');
-  const settings = document.querySelector('#monitoring-settings');
-  const accept = document.querySelector('#monitoring-accept');
-  const reject = document.querySelector('#monitoring-reject');
-
-  if (!panel || !settings || !accept || !reject) {
-    console.warn('Monitoring disabled: consent UI is missing.');
-    return;
-  }
+  const { panel, settings, accept, reject } = ensureConsentUi();
 
   choice = readChoice();
 
@@ -80,7 +167,7 @@ export function initializeMonitoringConsent() {
 
     if (persist) saveChoice(value);
 
-    panel.hidden = choice !== null;
+    if (panel) panel.hidden = choice !== null;
     syncRumConsent();
 
     if (choice === 'granted') {
@@ -88,16 +175,16 @@ export function initializeMonitoringConsent() {
     }
   }
 
-  accept.addEventListener('click', () => {
+  accept?.addEventListener('click', () => {
     applyChoice('granted', true);
   });
 
-  reject.addEventListener('click', () => {
+  reject?.addEventListener('click', () => {
     applyChoice('denied', true);
   });
 
-  settings.addEventListener('click', () => {
-    panel.hidden = false;
+  settings?.addEventListener('click', () => {
+    if (panel) panel.hidden = false;
   });
 
   window.addEventListener('storage', event => {
@@ -106,8 +193,18 @@ export function initializeMonitoringConsent() {
     }
   });
 
+  document.addEventListener('ikigai:localechange', () => {
+    applyCopy(document);
+  });
+
   // Expose settings only after the feature flag has passed.
-  settings.hidden = false;
+  if (settings) settings.hidden = false;
+
+  if (!panel || !settings || !accept || !reject) {
+    console.warn(
+      'Monitoring consent UI is incomplete; using the stored choice only.'
+    );
+  }
 
   applyChoice(choice);
 }
