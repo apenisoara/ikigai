@@ -3,5 +3,5 @@
  * Other scripts should read from window.__IKIGAI_APP__.
  */
 window.__IKIGAI_APP__ = {
-  version: '1.2.4'
+  version: '1.2.5'
 };
