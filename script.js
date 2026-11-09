@@ -1,6 +1,9 @@
 const form = document.querySelector("#ikigai-form");
 const results = document.querySelector("#results");
 const resultsMessage = document.querySelector("#results-message");
+const saveResultsActions = document.querySelector("#save-results-actions");
+const printResultsButton = document.querySelector("#print-results");
+const emailResultsButton = document.querySelector("#email-results");
 const editAnswersButton = document.querySelector("#edit-answers");
 const findButton = document.querySelector("#find-button");
 const langSelect = document.querySelector("#lang-select");
@@ -19,12 +22,15 @@ const BACKOFF_BASE_MS = 30_000;
 const BACKOFF_MAX_MS = 15 * 60_000;
 const BACKOFF_IDLE_RESET_MS = 60 * 60_000;
 const CLIENT_DAILY_LIMIT = 8;
+// Many mail clients truncate mailto: URLs around this size.
+const EMAIL_BODY_MAX_CHARS = 1600;
 
 let turnstileWidgetId = null;
 let cooldownTimerId = null;
 let requestInFlight = false;
 let currentLocale = I18N.defaultLocale;
 let resultsHoldCustomContent = false;
+let lastSavableResultText = "";
 
 /**
  * Stable anonymous browser session id (not IP). Shared NAT / firewall users
@@ -276,9 +282,20 @@ function parseRetryAfter(response, data) {
   return 0;
 }
 
+function setSaveActionsVisible(visible) {
+  if (!saveResultsActions) return;
+  saveResultsActions.hidden = !visible;
+}
+
+function clearSavableResult() {
+  lastSavableResultText = "";
+  setSaveActionsVisible(false);
+}
+
 function showResultsMessage(text) {
   results.hidden = false;
   resultsHoldCustomContent = true;
+  clearSavableResult();
   resultsMessage.replaceChildren();
   resultsMessage.textContent = text;
   results.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -286,6 +303,8 @@ function showResultsMessage(text) {
 
 function renderAnalysis(text) {
   resultsHoldCustomContent = true;
+  lastSavableResultText = text.trim();
+  setSaveActionsVisible(Boolean(lastSavableResultText));
   resultsMessage.replaceChildren();
 
   const lines = text.split(/\r?\n/);
@@ -333,6 +352,29 @@ function renderAnalysis(text) {
     element.textContent = line;
     resultsMessage.appendChild(element);
   }
+}
+
+function buildEmailHref(resultText) {
+  const intro = t("emailBodyIntro", currentLocale);
+  const subject = t("emailSubject", currentLocale);
+  const truncatedNote = t("emailBodyTruncated", currentLocale);
+  const prefix = `${intro}\n\n`;
+  let core = resultText.trim();
+  let truncated = false;
+
+  const compose = (text) =>
+    truncated ? `${prefix}${text}…${truncatedNote}` : `${prefix}${text}`;
+
+  // mailto: URLs are length-limited in many clients; keep the encoded body short.
+  while (
+    encodeURIComponent(compose(core)).length > EMAIL_BODY_MAX_CHARS &&
+    core.length > 80
+  ) {
+    truncated = true;
+    core = core.slice(0, Math.floor(core.length * 0.85)).trimEnd();
+  }
+
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(compose(core))}`;
 }
 
 function setLocale(locale) {
@@ -448,9 +490,21 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
+printResultsButton?.addEventListener("click", () => {
+  if (!lastSavableResultText) return;
+  window.print();
+});
+
+emailResultsButton?.addEventListener("click", () => {
+  if (!lastSavableResultText) return;
+  const href = buildEmailHref(lastSavableResultText);
+  window.location.href = href;
+});
+
 editAnswersButton.addEventListener("click", () => {
   results.hidden = true;
   resultsHoldCustomContent = false;
+  clearSavableResult();
   resultsMessage.textContent = t("resultsPlaceholder", currentLocale);
   document.querySelector("#love").focus();
 });
