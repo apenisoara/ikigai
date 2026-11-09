@@ -1,52 +1,63 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="privacyPageTitle">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Privacy notice for Ikigai Finder — how we process personal data under the GDPR in the European Union / Belgium.">
+  <meta name="description" data-i18n-content="privacyMetaDescription" content="Privacy notice for Ikigai Finder — how we process personal data under the GDPR in the European Union / Belgium.">
   <title>Privacy — Ikigai Finder</title>
   <link rel="stylesheet" href="style.css">
   <script src="app-version.js" defer></script>
   <script type="module" src="datadog-obs-bootstrap.js"></script>
+  <script src="i18n.js" defer></script>
+  <script src="privacy-i18n.js" defer></script>
+  <script src="privacy.js" defer></script>
 </head>
 <body>
   <header class="site-header">
-    <a class="wordmark" href="index.html">ikigai<span>.</span>finder</a>
+    <a class="wordmark" href="index.html" data-i18n-aria="wordmarkAria">ikigai<span>.</span>finder</a>
     <div class="header-tools">
-      <a class="header-note" href="index.html">← Back to the app</a>
+      <label class="lang-picker">
+        <span class="visually-hidden" data-i18n="langLabel">Language</span>
+        <select id="lang-select" name="lang">
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Français</option>
+          <option value="ro">Română</option>
+        </select>
+      </label>
+      <a class="header-note" href="index.html" data-i18n="privacyBackLink">← Back to the app</a>
     </div>
   </header>
 
   <main class="page-shell legal-page">
     <header class="legal-intro">
-      <p class="eyebrow">PRIVACY NOTICE</p>
-      <h1>How we handle your data</h1>
-      <p class="intro-copy">
+      <p class="eyebrow" data-i18n="privacyEyebrow">PRIVACY NOTICE</p>
+      <h1 data-i18n="privacyHeading">How we handle your data</h1>
+      <p class="intro-copy" data-i18n="privacyIntro">
         This notice explains what happens when you use Ikigai Finder, a static
         website hosted on GitHub Pages. It is written for visitors in the
         European Union, including Belgium, and reflects the EU General Data
         Protection Regulation (GDPR / AVG).
       </p>
-      <p class="legal-meta">Last updated: 9 November 2026</p>
+      <p class="legal-meta" data-i18n="privacyLastUpdated">Last updated: 9 November 2026</p>
     </header>
 
     <article class="legal-content">
       <section aria-labelledby="who-title">
-        <h2 id="who-title">1. Who is responsible</h2>
-        <p>
+        <h2 id="who-title" data-i18n="privacyWhoTitle">1. Who is responsible</h2>
+        <p data-i18n-html="privacyWhoP1">
           The operator of this website acts as the <strong>data controller</strong>
           for personal data processed through Ikigai Finder.
         </p>
-        <p>
+        <p data-i18n="privacyWhoP2">
           This is an independent / hobby project (not a company product). For
           privacy questions or GDPR requests, contact:
         </p>
-        <p>
+        <p data-i18n-html="privacyWhoContact">
           <strong>Contact:</strong>
           <a href="mailto:privacy@example.com">privacy@example.com</a>
-          <!-- Replace with your real contact address before publishing. -->
         </p>
-        <p>
+        <p data-i18n-html="privacyWhoAuthority">
           If you are in Belgium, the supervisory authority is the
           <strong>Gegevensbeschermingsautoriteit / Autorité de protection des
           données (APD)</strong>:
@@ -57,8 +68,8 @@
       </section>
 
       <section aria-labelledby="what-title">
-        <h2 id="what-title">2. What this website does</h2>
-        <p>
+        <h2 id="what-title" data-i18n="privacyWhatTitle">2. What this website does</h2>
+        <p data-i18n="privacyWhatP1">
           Ikigai Finder lets you answer four reflective questions and, if you
           choose to submit the form, receive an AI-generated reflection. The
           front end is static HTML/CSS/JavaScript. Form analysis is performed
@@ -68,57 +79,57 @@
       </section>
 
       <section aria-labelledby="data-title">
-        <h2 id="data-title">3. What data we process</h2>
+        <h2 id="data-title" data-i18n="privacyDataTitle">3. What data we process</h2>
 
-        <h3>3.1 Form answers (only if you submit)</h3>
-        <p>When you click “Explore my Ikigai”, we send:</p>
+        <h3 data-i18n="privacyDataFormTitle">3.1 Form answers (only if you submit)</h3>
+        <p data-i18n="privacyDataFormIntro">When you click “Explore my Ikigai”, we send:</p>
         <ul>
-          <li>your four free-text answers (what you love, strengths, paid work, world needs);</li>
-          <li>your selected interface language (<code>en</code>, <code>de</code>, <code>fr</code>, or <code>ro</code>);</li>
-          <li>a Cloudflare Turnstile token (bot protection);</li>
-          <li>an anonymous browser <code>clientId</code> used only for rate limiting.</li>
+          <li data-i18n="privacyDataFormLi1">your four free-text answers (what you love, strengths, paid work, world needs);</li>
+          <li data-i18n-html="privacyDataFormLi2">your selected interface language (<code>en</code>, <code>de</code>, <code>fr</code>, or <code>ro</code>);</li>
+          <li data-i18n="privacyDataFormLi3">a Cloudflare Turnstile token (bot protection);</li>
+          <li data-i18n-html="privacyDataFormLi4">an anonymous browser <code>clientId</code> used only for rate limiting.</li>
         </ul>
-        <p>
+        <p data-i18n="privacyDataFormNote">
           Please do not include special-category data (for example health,
           religion, political opinions, or biometric data) or other people’s
           personal data in your answers. The service is not designed for that.
         </p>
 
-        <h3>3.2 Data stored in your browser</h3>
-        <p>We use <code>localStorage</code> for:</p>
+        <h3 data-i18n="privacyDataBrowserTitle">3.2 Data stored in your browser</h3>
+        <p data-i18n-html="privacyDataBrowserIntro">We use <code>localStorage</code> for:</p>
         <ul>
-          <li>language preference;</li>
-          <li>an anonymous <code>clientId</code> and lightweight rate-limit state;</li>
-          <li>your optional monitoring consent choice (<code>granted</code> / <code>denied</code>), when that feature is enabled.</li>
+          <li data-i18n="privacyDataBrowserLi1">language preference;</li>
+          <li data-i18n-html="privacyDataBrowserLi2">an anonymous <code>clientId</code> and lightweight rate-limit state;</li>
+          <li data-i18n-html="privacyDataBrowserLi3">your optional monitoring consent choice (<code>granted</code> / <code>denied</code>), when that feature is enabled.</li>
         </ul>
-        <p>
+        <p data-i18n="privacyDataBrowserNote">
           These values stay on your device unless you clear site data. They are
           not used for advertising profiles.
         </p>
 
-        <h3>3.3 Technical / security data</h3>
-        <p>
+        <h3 data-i18n="privacyDataTechTitle">3.3 Technical / security data</h3>
+        <p data-i18n="privacyDataTechP1">
           Cloudflare (Pages hosting edge, Turnstile, and the Worker) and GitHub
           Pages may process standard technical data such as IP address, user
           agent, timestamps, and request metadata to deliver the site, prevent
           abuse, and keep the service available.
         </p>
 
-        <h3 id="optional-monitoring">3.4 Optional website monitoring (Datadog RUM)</h3>
-        <p>
+        <h3 id="optional-monitoring" data-i18n="privacyDataMonitorTitle">3.4 Optional website monitoring (Datadog RUM)</h3>
+        <p data-i18n="privacyDataMonitorP1">
           If a feature flag enables monitoring on this site, we may ask for your
           consent before loading Datadog Real User Monitoring (RUM). Only after
           you accept do we load the RUM script.
         </p>
-        <p>When enabled and consented, Datadog may collect:</p>
+        <p data-i18n="privacyDataMonitorIntro">When enabled and consented, Datadog may collect:</p>
         <ul>
-          <li>page views and navigation;</li>
-          <li>performance timings and resource loads;</li>
-          <li>browser errors and long tasks;</li>
-          <li>interaction events (for example clicks);</li>
-          <li>session replay recordings of the page, where that product feature is turned on.</li>
+          <li data-i18n="privacyDataMonitorLi1">page views and navigation;</li>
+          <li data-i18n="privacyDataMonitorLi2">performance timings and resource loads;</li>
+          <li data-i18n="privacyDataMonitorLi3">browser errors and long tasks;</li>
+          <li data-i18n="privacyDataMonitorLi4">interaction events (for example clicks);</li>
+          <li data-i18n="privacyDataMonitorLi5">session replay recordings of the page, where that product feature is turned on.</li>
         </ul>
-        <p>
+        <p data-i18n-html="privacyDataMonitorNote">
           Monitoring is configured against Datadog’s <strong>EU site</strong>
           (<code>datadoghq.eu</code>). You can change your choice later via
           “Analytics preferences” in the footer of any page, or by clearing this
@@ -127,46 +138,46 @@
       </section>
 
       <section aria-labelledby="purposes-title">
-        <h2 id="purposes-title">4. Why we process data (purposes &amp; legal bases)</h2>
+        <h2 id="purposes-title" data-i18n="privacyPurposesTitle">4. Why we process data (purposes &amp; legal bases)</h2>
         <div class="legal-table-wrap">
           <table class="legal-table">
             <thead>
               <tr>
-                <th scope="col">Processing</th>
-                <th scope="col">Purpose</th>
-                <th scope="col">Legal basis (GDPR)</th>
+                <th scope="col" data-i18n="privacyTableProcessing">Processing</th>
+                <th scope="col" data-i18n="privacyTablePurpose">Purpose</th>
+                <th scope="col" data-i18n="privacyTableBasis">Legal basis (GDPR)</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Form answers + AI reply</td>
-                <td>Provide the Ikigai reflection you requested</td>
-                <td>Art. 6(1)(b) — steps at your request / performance of the service</td>
+                <td data-i18n="privacyTableR1C1">Form answers + AI reply</td>
+                <td data-i18n="privacyTableR1C2">Provide the Ikigai reflection you requested</td>
+                <td data-i18n="privacyTableR1C3">Art. 6(1)(b) — steps at your request / performance of the service</td>
               </tr>
               <tr>
-                <td>Turnstile + rate limits + <code>clientId</code></td>
-                <td>Protect the API from bots and fair-use overload</td>
-                <td>Art. 6(1)(f) — legitimate interest in security and availability</td>
+                <td data-i18n-html="privacyTableR2C1">Turnstile + rate limits + <code>clientId</code></td>
+                <td data-i18n="privacyTableR2C2">Protect the API from bots and fair-use overload</td>
+                <td data-i18n="privacyTableR2C3">Art. 6(1)(f) — legitimate interest in security and availability</td>
               </tr>
               <tr>
-                <td>Language preference</td>
-                <td>Show the interface in your chosen language</td>
-                <td>Art. 6(1)(f) — legitimate interest in usability</td>
+                <td data-i18n="privacyTableR3C1">Language preference</td>
+                <td data-i18n="privacyTableR3C2">Show the interface in your chosen language</td>
+                <td data-i18n="privacyTableR3C3">Art. 6(1)(f) — legitimate interest in usability</td>
               </tr>
               <tr>
-                <td>Hosting / CDN logs</td>
-                <td>Deliver pages and keep infrastructure secure</td>
-                <td>Art. 6(1)(f) — legitimate interest in operating the website</td>
+                <td data-i18n="privacyTableR4C1">Hosting / CDN logs</td>
+                <td data-i18n="privacyTableR4C2">Deliver pages and keep infrastructure secure</td>
+                <td data-i18n="privacyTableR4C3">Art. 6(1)(f) — legitimate interest in operating the website</td>
               </tr>
               <tr>
-                <td>Datadog RUM / session replay</td>
-                <td>Understand reliability, errors, and UX issues</td>
-                <td>Art. 6(1)(a) — consent (optional; can be withdrawn)</td>
+                <td data-i18n="privacyTableR5C1">Datadog RUM / session replay</td>
+                <td data-i18n="privacyTableR5C2">Understand reliability, errors, and UX issues</td>
+                <td data-i18n="privacyTableR5C3">Art. 6(1)(a) — consent (optional; can be withdrawn)</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p>
+        <p data-i18n="privacyPurposesNote">
           Where we rely on legitimate interests, you may object under GDPR
           Article 21. Where we rely on consent, you may withdraw it at any time
           without affecting prior lawful processing.
@@ -174,45 +185,45 @@
       </section>
 
       <section aria-labelledby="processors-title">
-        <h2 id="processors-title">5. Who receives the data</h2>
-        <p>Depending on what you use, data may be processed by:</p>
+        <h2 id="processors-title" data-i18n="privacyProcessorsTitle">5. Who receives the data</h2>
+        <p data-i18n="privacyProcessorsIntro">Depending on what you use, data may be processed by:</p>
         <ul>
-          <li>
+          <li data-i18n-html="privacyProcessorsLi1">
             <strong>GitHub, Inc.</strong> — static hosting (GitHub Pages).
             See GitHub’s privacy statement for infrastructure processing.
           </li>
-          <li>
+          <li data-i18n-html="privacyProcessorsLi2">
             <strong>Cloudflare, Inc.</strong> — CDN/edge delivery, Turnstile bot
             protection, and the Worker that receives form submissions.
           </li>
-          <li>
+          <li data-i18n-html="privacyProcessorsLi3">
             <strong>Google LLC</strong> (Gemini API) — generates the reflection
             text from the answers you submit. Content may be processed outside
             the EEA subject to Google’s terms and transfer safeguards.
           </li>
-          <li>
+          <li data-i18n-html="privacyProcessorsLi4">
             <strong>Datadog, Inc.</strong> — only if monitoring is enabled and
             you consent. EU region configuration is used
             (<code>datadoghq.eu</code>). Datadog acts as a processor for
             telemetry we send.
           </li>
         </ul>
-        <p>
+        <p data-i18n="privacyProcessorsNote">
           We do not sell your personal data. We do not use your Ikigai answers
           for advertising.
         </p>
       </section>
 
       <section aria-labelledby="transfers-title">
-        <h2 id="transfers-title">6. International transfers</h2>
-        <p>
+        <h2 id="transfers-title" data-i18n="privacyTransfersTitle">6. International transfers</h2>
+        <p data-i18n="privacyTransfersP1">
           Some providers above are established in the United States or may
           process data outside the European Economic Area. Where a transfer is
           not covered by an adequacy decision, providers typically rely on
           Standard Contractual Clauses (SCCs) and related safeguards under
           GDPR Chapter V.
         </p>
-        <p>
+        <p data-i18n="privacyTransfersP2">
           Datadog RUM for this site is pointed at the EU platform. Other
           services (notably GitHub Pages hosting metadata, Cloudflare global
           network routing, and Google Gemini) may involve processing outside
@@ -221,19 +232,19 @@
       </section>
 
       <section aria-labelledby="retention-title">
-        <h2 id="retention-title">7. How long we keep data</h2>
+        <h2 id="retention-title" data-i18n="privacyRetentionTitle">7. How long we keep data</h2>
         <ul>
-          <li>
+          <li data-i18n-html="privacyRetentionLi1">
             <strong>Browser storage</strong> — until you clear it, change
             consent, or we change the storage key version.
           </li>
-          <li>
+          <li data-i18n-html="privacyRetentionLi2">
             <strong>Form submissions</strong> — processed to generate a reply.
             The Worker is not operated as a long-term personal archive of your
             answers; operational logs and provider-side retention follow each
             vendor’s defaults and our rate-limit needs.
           </li>
-          <li>
+          <li data-i18n-html="privacyRetentionLi3">
             <strong>Monitoring telemetry</strong> — retained according to the
             Datadog product retention settings configured for this application,
             and only while consent remains granted for new collection.
@@ -242,18 +253,18 @@
       </section>
 
       <section aria-labelledby="rights-title">
-        <h2 id="rights-title">8. Your rights (GDPR)</h2>
-        <p>If GDPR applies to you, you may have the right to:</p>
+        <h2 id="rights-title" data-i18n="privacyRightsTitle">8. Your rights (GDPR)</h2>
+        <p data-i18n="privacyRightsIntro">If GDPR applies to you, you may have the right to:</p>
         <ul>
-          <li>access your personal data;</li>
-          <li>rectify inaccurate data;</li>
-          <li>erase data (“right to be forgotten”), where applicable;</li>
-          <li>restrict or object to certain processing;</li>
-          <li>data portability, where processing is based on consent or contract and carried out by automated means;</li>
-          <li>withdraw consent for optional monitoring at any time;</li>
-          <li>lodge a complaint with a supervisory authority — in Belgium, the APD.</li>
+          <li data-i18n="privacyRightsLi1">access your personal data;</li>
+          <li data-i18n="privacyRightsLi2">rectify inaccurate data;</li>
+          <li data-i18n="privacyRightsLi3">erase data (“right to be forgotten”), where applicable;</li>
+          <li data-i18n="privacyRightsLi4">restrict or object to certain processing;</li>
+          <li data-i18n="privacyRightsLi5">data portability, where processing is based on consent or contract and carried out by automated means;</li>
+          <li data-i18n="privacyRightsLi6">withdraw consent for optional monitoring at any time;</li>
+          <li data-i18n="privacyRightsLi7">lodge a complaint with a supervisory authority — in Belgium, the APD.</li>
         </ul>
-        <p>
+        <p data-i18n="privacyRightsNote">
           To exercise these rights, email the contact address above. Because
           this site does not create user accounts, we may ask for enough
           information to locate relevant records (for example approximate time
@@ -263,8 +274,8 @@
       </section>
 
       <section aria-labelledby="children-title">
-        <h2 id="children-title">9. Children</h2>
-        <p>
+        <h2 id="children-title" data-i18n="privacyChildrenTitle">9. Children</h2>
+        <p data-i18n="privacyChildrenP1">
           This website is not directed at children under 16. Do not submit
           personal information about minors. Belgian / GDPR rules on children’s
           consent for information-society services may require parental
@@ -273,22 +284,22 @@
       </section>
 
       <section aria-labelledby="cookies-title">
-        <h2 id="cookies-title">10. Cookies and similar technologies</h2>
-        <p>
+        <h2 id="cookies-title" data-i18n="privacyCookiesTitle">10. Cookies and similar technologies</h2>
+        <p data-i18n-html="privacyCookiesP1">
           The core questionnaire experience uses <code>localStorage</code>, not
           advertising cookies. Cloudflare Turnstile may set or read technical
           cookies / storage needed for bot challenges. Datadog RUM, when
           consented, may use cookies or similar storage to correlate a session.
         </p>
-        <p>
+        <p data-i18n="privacyCookiesP2">
           Optional monitoring is shown only when the feature is enabled, and
           collection starts after an explicit Accept / Reject choice.
         </p>
       </section>
 
       <section aria-labelledby="changes-title">
-        <h2 id="changes-title">11. Changes to this notice</h2>
-        <p>
+        <h2 id="changes-title" data-i18n="privacyChangesTitle">11. Changes to this notice</h2>
+        <p data-i18n="privacyChangesP1">
           We may update this page when the website, vendors, or legal
           requirements change. The “Last updated” date at the top will be
           revised. Material changes to optional monitoring will continue to
@@ -297,8 +308,8 @@
       </section>
 
       <section aria-labelledby="disclaimer-title">
-        <h2 id="disclaimer-title">12. Important disclaimer</h2>
-        <p>
+        <h2 id="disclaimer-title" data-i18n="privacyDisclaimerTitle">12. Important disclaimer</h2>
+        <p data-i18n="privacyDisclaimerP1">
           This page is a practical privacy notice for a small static project. It
           is not legal advice. If you operate this site for an organisation, have
           a lawyer review controller identity, contact details, retention, and
@@ -309,12 +320,12 @@
     </article>
 
     <footer class="site-footer">
-      <a href="index.html">← Return to Ikigai Finder</a>
+      <a href="index.html" data-i18n="privacyFooterBack">← Return to Ikigai Finder</a>
       <span class="footer-meta">
-        <button type="button" id="monitoring-settings" class="text-button" hidden>
+        <button type="button" id="monitoring-settings" class="text-button" hidden data-i18n="analyticsPreferences">
           Analytics preferences
         </button>
-        <span>Belgium / EU · GDPR</span>
+        <span data-i18n="privacyFooterRegion">Belgium / EU · GDPR</span>
       </span>
     </footer>
   </main>
@@ -325,17 +336,17 @@
            aria-modal="false">
     <div class="monitoring-consent-inner">
       <div class="monitoring-consent-copy">
-        <h2 id="monitoring-consent-title">Site analytics and performance</h2>
+        <h2 id="monitoring-consent-title" data-i18n="monitoringConsentTitle">Site analytics and performance</h2>
         <p>
-          <span>To keep this site fast and reliable, we’d like to collect anonymous analytics about page visits, interactions, performance, and errors. This is optional and helps us improve your experience.</span>
-          <a href="#optional-monitoring">Learn more</a>
+          <span data-i18n="monitoringConsentCopy">To keep this site fast and reliable, we’d like to collect anonymous analytics about page visits, interactions, performance, and errors. This is optional and helps us improve your experience.</span>
+          <a href="#optional-monitoring" data-i18n="monitoringConsentLearnMore">Learn more</a>
         </p>
       </div>
       <div class="monitoring-consent-actions">
-        <button type="button" id="monitoring-reject" class="secondary-button">
+        <button type="button" id="monitoring-reject" class="secondary-button" data-i18n="monitoringConsentDecline">
           Decline
         </button>
-        <button type="button" id="monitoring-accept">
+        <button type="button" id="monitoring-accept" data-i18n="monitoringConsentAccept">
           Accept
         </button>
       </div>

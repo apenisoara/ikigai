@@ -464,10 +464,16 @@ function applyTranslations(locale = getLocale()) {
   document.documentElement.lang = lang;
   writeStoredLocale(lang);
 
-  document.title = t("pageTitle", lang);
+  const titleKey =
+    document.documentElement.getAttribute("data-i18n-title") || "pageTitle";
+  document.title = t(titleKey, lang);
 
   const meta = document.querySelector('meta[name="description"]');
-  if (meta) meta.setAttribute("content", t("metaDescription", lang));
+  if (meta) {
+    const metaKey =
+      meta.getAttribute("data-i18n-content") || "metaDescription";
+    meta.setAttribute("content", t(metaKey, lang));
+  }
 
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
