@@ -91,6 +91,13 @@ const I18N = {
       monitoringConsentDecline: "Decline",
       exploring: "Exploring your Ikigai...",
       analysing: "Analysing your answers...",
+      waitTips: [
+        "Weaving your four answers together…",
+        "Looking for where love, skill, work, and need meet…",
+        "Shaping a few possible directions…",
+        "Almost there — preparing your reflection…"
+      ],
+      waitElapsed: "Still working · {time}",
       waitButton: "Wait {time}…",
       dailyLimitButton: "Daily limit reached",
       dayLimitMessage:
@@ -185,6 +192,13 @@ const I18N = {
       monitoringConsentDecline: "Ablehnen",
       exploring: "Dein Ikigai wird erkundet...",
       analysing: "Deine Antworten werden analysiert...",
+      waitTips: [
+        "Deine vier Antworten werden verknüpft…",
+        "Wir suchen, wo Liebe, Können, Arbeit und Bedarf sich treffen…",
+        "Ein paar mögliche Richtungen nehmen Form an…",
+        "Gleich fertig — deine Reflexion wird vorbereitet…"
+      ],
+      waitElapsed: "Arbeitet noch · {time}",
       waitButton: "Warte {time}…",
       dailyLimitButton: "Tageslimit erreicht",
       dayLimitMessage:
@@ -279,6 +293,13 @@ const I18N = {
       monitoringConsentDecline: "Refuser",
       exploring: "Exploration de votre Ikigai...",
       analysing: "Analyse de vos réponses...",
+      waitTips: [
+        "Nous tissons vos quatre réponses…",
+        "Nous cherchons où amour, talent, travail et besoin se rencontrent…",
+        "Quelques directions possibles prennent forme…",
+        "Presque terminé — préparation de votre réflexion…"
+      ],
+      waitElapsed: "Toujours en cours · {time}",
       waitButton: "Attendez {time}…",
       dailyLimitButton: "Limite quotidienne atteinte",
       dayLimitMessage:
@@ -373,6 +394,13 @@ const I18N = {
       monitoringConsentDecline: "Refuză",
       exploring: "Se explorează Ikigai-ul tău...",
       analysing: "Se analizează răspunsurile...",
+      waitTips: [
+        "Împletim cele patru răspunsuri…",
+        "Căutăm unde se întâlnesc pasiunea, talentul, munca și nevoia…",
+        "Prind formă câteva direcții posibile…",
+        "Aproape gata — pregătim reflecția ta…"
+      ],
+      waitElapsed: "Încă lucrează · {time}",
       waitButton: "Așteaptă {time}…",
       dailyLimitButton: "Limita zilnică atinsă",
       dayLimitMessage:
@@ -465,10 +493,19 @@ function getLocale() {
 function t(key, locale = getLocale(), vars = {}) {
   const table = I18N.strings[normalizeLocale(locale)] || I18N.strings[I18N.defaultLocale];
   let value = table[key] ?? I18N.strings[I18N.defaultLocale][key] ?? key;
+  // List keys (e.g. waitTips) belong to tList(); keep t() string-only.
+  if (typeof value !== "string") value = key;
   for (const [name, replacement] of Object.entries(vars)) {
     value = value.replaceAll(`{${name}}`, String(replacement));
   }
   return value;
+}
+
+/** Return a string-list translation (e.g. rotating wait tips). */
+function tList(key, locale = getLocale()) {
+  const table = I18N.strings[normalizeLocale(locale)] || I18N.strings[I18N.defaultLocale];
+  const value = table[key] ?? I18N.strings[I18N.defaultLocale][key] ?? [];
+  return Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
 }
 
 function applyTranslations(locale = getLocale()) {
