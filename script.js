@@ -43,8 +43,12 @@ let waitFeedbackStartedAt = 0;
 let waitTipIndex = 0;
 let waitTipTimerId = null;
 let waitElapsedTimerId = null;
+let analysisAbortController = null;
+let streamDraftFlushTimer = null;
+let streamDraftPendingText = "";
 
 const WAIT_TIP_INTERVAL_MS = 3500;
+const STREAM_DRAFT_THROTTLE_MS = 75;
 
 /**
  * Map HTML constraint failures to localized messages. Clears custom validity
@@ -373,6 +377,189 @@ function clearSavableResult() {
   setSaveActionsVisible(false);
 }
 
+function clearStreamDraftThrottle() {
+  if (streamDraftFlushTimer) {
+    clearTimeout(streamDraftFlushTimer);
+    streamDraftFlushTimer = null;
+  }
+  streamDraftPendingText = "";
+}
+
+function abortActiveAnalysis() {
+  if (analysisAbortController) {
+    analysisAbortController.abort();
+    analysisAbortController = null;
+  }
+  clearStreamDraftThrottle();
+}
+
+function isEventStreamContentType(contentType) {
+  return /text\/event-stream/i.test(contentType || "");
+}
+
+/** Split an SSE text buffer into complete events and the incomplete remainder. */
+function splitSseBuffer(buffer) {
+  const parts = buffer.split(/\r?\n\r?\n/);
+  const rest = parts.pop() ?? "";
+  const events = parts.filter((part) => part.trim().length > 0);
+  return { events, rest };
+}
+
+/** Parse one raw SSE event block into { event, data }. */
+function parseSseEvent(rawEvent) {
+  if (!rawEvent) return null;
+
+  let eventName = "message";
+  const dataLines = [];
+
+  for (const line of rawEvent.split(/\r?\n/)) {
+    if (!line || line.startsWith(":")) continue;
+    if (line.startsWith("event:")) {
+      eventName = line.slice(6).trim() || "message";
+      continue;
+    }
+    if (line.startsWith("data:")) {
+      dataLines.push(line.slice(5).trimStart());
+    }
+  }
+
+  if (!dataLines.length) return null;
+
+  const rawData = dataLines.join("\n");
+  let data = rawData;
+  try {
+    data = JSON.parse(rawData);
+  } catch {
+    // Keep non-JSON payloads as a string.
+  }
+
+  return { event: eventName, data };
+}
+
+function ensureStreamDraftElement() {
+  let draft = resultsMessage.querySelector("p.stream-draft");
+  if (draft) return draft;
+
+  resultsMessage.replaceChildren();
+  draft = document.createElement("p");
+  draft.className = "stream-draft";
+  // Avoid noisy aria-live announcements while tokens arrive.
+  draft.setAttribute("aria-hidden", "true");
+  resultsMessage.appendChild(draft);
+  return draft;
+}
+
+function paintStreamDraft(text, { force = false } = {}) {
+  streamDraftPendingText = text;
+
+  const flush = () => {
+    streamDraftFlushTimer = null;
+    const draft = ensureStreamDraftElement();
+    draft.textContent = streamDraftPendingText;
+  };
+
+  if (force) {
+    if (streamDraftFlushTimer) {
+      clearTimeout(streamDraftFlushTimer);
+      streamDraftFlushTimer = null;
+    }
+    flush();
+    return;
+  }
+
+  if (streamDraftFlushTimer) return;
+  streamDraftFlushTimer = setTimeout(flush, STREAM_DRAFT_THROTTLE_MS);
+}
+
+/**
+ * Read Worker app SSE (delta / done / error). Calls onFirstDelta once, then
+ * paints plain draft text until done. Throws on stream error / empty result.
+ */
+async function consumeAnalysisSse(response, { onFirstDelta } = {}) {
+  if (!response.body) {
+    throw new Error(t("emptyResult", currentLocale));
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let accumulated = "";
+  let sawFirstDelta = false;
+  let terminalEvent = null;
+  let streamError = null;
+
+  const handleParsed = (parsed) => {
+    if (!parsed) return;
+
+    if (parsed.event === "delta") {
+      const chunk = typeof parsed.data?.text === "string" ? parsed.data.text : "";
+      if (!chunk) return;
+      if (!sawFirstDelta) {
+        sawFirstDelta = true;
+        onFirstDelta?.();
+      }
+      accumulated += chunk;
+      paintStreamDraft(accumulated);
+      return;
+    }
+
+    if (parsed.event === "done") {
+      terminalEvent = "done";
+      paintStreamDraft(accumulated, { force: true });
+      return;
+    }
+
+    if (parsed.event === "error") {
+      terminalEvent = "error";
+      const message =
+        typeof parsed.data?.error === "string" && parsed.data.error.trim()
+          ? parsed.data.error
+          : t("analysisFailed", currentLocale);
+      streamError = new Error(message);
+    }
+  };
+
+  try {
+    while (!terminalEvent) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const split = splitSseBuffer(buffer);
+      buffer = split.rest;
+
+      for (const rawEvent of split.events) {
+        handleParsed(parseSseEvent(rawEvent));
+        if (terminalEvent) break;
+      }
+    }
+
+    if (!terminalEvent && buffer.trim()) {
+      handleParsed(parseSseEvent(buffer));
+    }
+  } finally {
+    clearStreamDraftThrottle();
+    try {
+      reader.releaseLock();
+    } catch {
+      // ignore
+    }
+  }
+
+  if (streamError) throw streamError;
+
+  if (terminalEvent !== "done") {
+    throw new Error(t("analysisFailed", currentLocale));
+  }
+
+  const text = accumulated.trim();
+  if (!text) {
+    throw new Error(t("emptyResult", currentLocale));
+  }
+
+  return text;
+}
+
 function formatElapsedWait(ms) {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   if (totalSeconds < 60) return `${totalSeconds}s`;
@@ -643,7 +830,8 @@ form.addEventListener("submit", async (event) => {
     world: form.elements.world.value.trim(),
     lang: currentLocale,
     turnstileToken,
-    clientId: getClientId()
+    clientId: getClientId(),
+    stream: true
   };
 
   const analysisStartedAt = performance.now();
@@ -652,10 +840,15 @@ form.addEventListener("submit", async (event) => {
   recordRumAction(RUM_ACTION_REQUESTED, {
     locale: currentLocale,
     client_id_hash: clientIdHash,
-    client_daily_limit: CLIENT_DAILY_LIMIT
+    client_daily_limit: CLIENT_DAILY_LIMIT,
+    stream: true
   });
 
   startRumAnalysisTiming();
+
+  abortActiveAnalysis();
+  analysisAbortController = new AbortController();
+  const { signal } = analysisAbortController;
 
   requestInFlight = true;
   findButton.disabled = true;
@@ -669,9 +862,47 @@ form.addEventListener("submit", async (event) => {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(answers)
+      body: JSON.stringify(answers),
+      signal
     });
 
+    const contentType = response.headers.get("Content-Type") || "";
+
+    // Opt-in SSE success path (Worker body.stream === true after gates).
+    if (isEventStreamContentType(contentType)) {
+      if (!response.ok) {
+        recordRumAction(RUM_ACTION_FAILED, {
+          status: "api_error",
+          http_status: response.status,
+          error_type: "stream_http_error",
+          stream: true
+        });
+        throw new Error(t("analysisFailed", currentLocale));
+      }
+
+      const result = await consumeAnalysisSse(response, {
+        onFirstDelta: () => {
+          stopWaitFeedback();
+        }
+      });
+
+      recordRumAction(RUM_ACTION_COMPLETED, {
+        status: "success",
+        http_status: response.status,
+        response_length: result.length,
+        duration_ms: Math.round(performance.now() - analysisStartedAt),
+        stream: true
+      });
+
+      stopRumAnalysisTiming();
+
+      results.hidden = false;
+      renderAnalysis(result);
+      results.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    // JSON path: pre-stream failures + dual-mode { result } success.
     const data = await response.json().catch(() => ({}));
     const retryAfter = parseRetryAfter(response, data);
 
@@ -679,7 +910,8 @@ form.addEventListener("submit", async (event) => {
       recordRumAction(RUM_ACTION_FAILED, {
         status: "rate_limited",
         http_status: response.status,
-        retry_after_seconds: retryAfter || null
+        retry_after_seconds: retryAfter || null,
+        stream: true
       });
 
       applyServerCooldown(retryAfter || Math.ceil(backoffMs(readRateState().streak) / 1000));
@@ -694,7 +926,8 @@ form.addEventListener("submit", async (event) => {
       recordRumAction(RUM_ACTION_FAILED, {
         status: "api_error",
         http_status: response.status,
-        error_type: "api_error"
+        error_type: "api_error",
+        stream: true
       });
 
       if (retryAfter) applyServerCooldown(retryAfter);
@@ -704,7 +937,8 @@ form.addEventListener("submit", async (event) => {
     if (typeof data.result !== "string" || !data.result.trim()) {
       recordRumAction(RUM_ACTION_FAILED, {
         status: "empty_response",
-        http_status: response.status
+        http_status: response.status,
+        stream: true
       });
 
       throw new Error(t("emptyResult", currentLocale));
@@ -714,7 +948,8 @@ form.addEventListener("submit", async (event) => {
       status: "success",
       http_status: response.status,
       response_length: data.result.length,
-      duration_ms: Math.round(performance.now() - analysisStartedAt)
+      duration_ms: Math.round(performance.now() - analysisStartedAt),
+      stream: false
     });
 
     stopRumAnalysisTiming();
@@ -723,9 +958,17 @@ form.addEventListener("submit", async (event) => {
     renderAnalysis(data.result);
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
+    stopRumAnalysisTiming();
+
+    if (error?.name === "AbortError") {
+      clearSavableResult();
+      return;
+    }
+
     recordRumAction(RUM_ACTION_FAILED, {
       status: "network_or_client_error",
-      error_name: error?.name || "Error"
+      error_name: error?.name || "Error",
+      stream: true
     });
 
     console.error("Ikigai request failed:", error);
@@ -740,6 +983,10 @@ form.addEventListener("submit", async (event) => {
     }
   } finally {
     stopWaitFeedback();
+    clearStreamDraftThrottle();
+    if (analysisAbortController?.signal === signal) {
+      analysisAbortController = null;
+    }
     requestInFlight = false;
     resetTurnstile();
     startCooldownTicker();
@@ -758,10 +1005,15 @@ emailResultsButton?.addEventListener("click", () => {
 });
 
 editAnswersButton.addEventListener("click", () => {
+  abortActiveAnalysis();
   stopWaitFeedback();
   results.hidden = true;
   resultsHoldCustomContent = false;
   clearSavableResult();
   resultsMessage.textContent = t("resultsPlaceholder", currentLocale);
   document.querySelector("#love").focus();
+});
+
+window.addEventListener("pagehide", () => {
+  abortActiveAnalysis();
 });
