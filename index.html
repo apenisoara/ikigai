@@ -10,6 +10,7 @@
   <script src="app-version.js" defer></script>
   <script type="module" src="datadog-obs-bootstrap.js"></script>
   <script src="i18n.js" defer></script>
+  <script src="diagram.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -41,36 +42,77 @@
       </p>
 
       <div class="ikigai-diagram"
-           role="img"
+           role="group"
            data-i18n-aria="diagramAria"
            aria-label="Four overlapping circles representing what you love,
            what you are good at, what you can be paid for,
            and what the world needs, meeting at Ikigai.">
 
-        <!-- The four colored circles -->
-        <div class="circle circle-love" aria-hidden="true"></div>
-        <div class="circle circle-good" aria-hidden="true"></div>
-        <div class="circle circle-world" aria-hidden="true"></div>
-        <div class="circle circle-paid" aria-hidden="true"></div>
+        <svg class="ikigai-diagram-svg"
+             viewBox="0 0 100 100"
+             width="100%"
+             height="100%"
+             focusable="false"
+             xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="diagram-soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
-        <!-- Labels placed above the circles -->
-        <span class="diagram-label label-love" data-i18n-html="labelLoveHtml">
+          <!-- Interactive vector circles (order: love top, good left, world right, paid bottom) -->
+          <circle class="diagram-circle circle-love"
+                  data-circle="love"
+                  cx="50" cy="32" r="29"
+                  tabindex="0"
+                  role="img"
+                  data-i18n-aria="circleLoveAria"
+                  aria-label="What you love" />
+          <circle class="diagram-circle circle-good"
+                  data-circle="good"
+                  cx="31" cy="51" r="29"
+                  tabindex="0"
+                  role="img"
+                  data-i18n-aria="circleGoodAria"
+                  aria-label="What you are good at" />
+          <circle class="diagram-circle circle-world"
+                  data-circle="world"
+                  cx="69" cy="51" r="29"
+                  tabindex="0"
+                  role="img"
+                  data-i18n-aria="circleWorldAria"
+                  aria-label="What the world needs" />
+          <circle class="diagram-circle circle-paid"
+                  data-circle="paid"
+                  cx="50" cy="68" r="29"
+                  tabindex="0"
+                  role="img"
+                  data-i18n-aria="circlePaidAria"
+                  aria-label="What you can be paid for" />
+        </svg>
+
+        <!-- Labels float above the SVG; pointer-events none so hover hits circles -->
+        <span class="diagram-label label-love" data-i18n-html="labelLoveHtml" aria-hidden="true">
           WHAT YOU<br><strong>LOVE</strong>
         </span>
 
-        <span class="diagram-label label-good" data-i18n-html="labelGoodHtml">
+        <span class="diagram-label label-good" data-i18n-html="labelGoodHtml" aria-hidden="true">
           WHAT YOU ARE<br><strong>GOOD AT</strong>
         </span>
 
-        <span class="diagram-label label-world" data-i18n-html="labelWorldHtml">
+        <span class="diagram-label label-world" data-i18n-html="labelWorldHtml" aria-hidden="true">
           WHAT THE WORLD<br><strong>NEEDS</strong>
         </span>
 
-        <span class="diagram-label label-paid" data-i18n-html="labelPaidHtml">
+        <span class="diagram-label label-paid" data-i18n-html="labelPaidHtml" aria-hidden="true">
           WHAT YOU CAN BE<br><strong>PAID FOR</strong>
         </span>
 
-        <span class="diagram-center">IKIGAI</span>
+        <span class="diagram-center" aria-hidden="true">IKIGAI</span>
       </div>
     </section>
 

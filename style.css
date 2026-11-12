@@ -304,51 +304,160 @@ body:has(#monitoring-consent:not([hidden])) {
   margin-bottom: 24px;
 }
 
-/* The shared space containing all four circles */
+/* The shared space containing the SVG circles + labels */
 .ikigai-diagram {
   position: relative;
   width: 100%;
   max-width: 580px;
   aspect-ratio: 1 / 1;
   margin: 0 auto;
+  outline: none;
 }
 
-/* Common styling shared by all circles */
-.circle {
-  position: absolute;
-  width: 58%;
-  aspect-ratio: 1 / 1;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  border-radius: 50%;
+.ikigai-diagram-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-/* Each circle gets its own position and color */
-.circle-love {
-  top: 3%;
-  left: 21%;
-  background: rgba(120, 169, 237, 0.55);
+/* Vector circles — colors match the previous CSS diagram */
+.diagram-circle {
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+  --parallax-scale: 1;
+  fill-opacity: 0.55;
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 0.55;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(var(--parallax-x), var(--parallax-y)) scale(var(--parallax-scale));
+  transition:
+    fill-opacity 220ms ease,
+    stroke-width 220ms ease,
+    stroke 220ms ease,
+    filter 220ms ease;
+  cursor: pointer;
+  outline: none;
+  animation: diagram-idle-shimmer 5.6s ease-in-out infinite;
+  will-change: transform;
 }
 
-.circle-good {
-  top: 22%;
-  left: 2%;
-  background: rgba(195, 166, 230, 0.55);
+.diagram-circle.circle-love {
+  fill: rgb(120, 169, 237);
+  animation-delay: 0s;
 }
 
-.circle-world {
-  top: 22%;
-  right: 2%;
-  background: rgba(146, 120, 222, 0.40);
+.diagram-circle.circle-good {
+  fill: rgb(195, 166, 230);
+  animation-delay: -1.4s;
 }
 
-.circle-paid {
-  top: 39%;
-  left: 21%;
-  background: rgba(120, 169, 237, 0.55);
+.diagram-circle.circle-world {
+  fill: rgb(146, 120, 222);
+  fill-opacity: 0.4;
+  animation-name: diagram-idle-shimmer-world;
+  animation-delay: -2.8s;
+}
+
+.diagram-circle.circle-paid {
+  fill: rgb(120, 169, 237);
+  animation-delay: -4.2s;
+}
+
+@keyframes diagram-idle-shimmer {
+  0%,
+  100% {
+    fill-opacity: 0.5;
+    filter: brightness(1);
+  }
+  50% {
+    fill-opacity: 0.66;
+    filter: brightness(1.06);
+  }
+}
+
+/* World stays a touch softer than the other three at rest */
+@keyframes diagram-idle-shimmer-world {
+  0%,
+  100% {
+    fill-opacity: 0.36;
+    filter: brightness(1);
+  }
+  50% {
+    fill-opacity: 0.5;
+    filter: brightness(1.06);
+  }
+}
+
+/* Drop idle shimmer while exploring so hover opacity rules win */
+.ikigai-diagram.is-interacting .diagram-circle,
+.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible) .diagram-circle {
+  animation: none;
+}
+
+/* Soften siblings gently — keep enough fill so labels stay readable */
+.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
+  .diagram-circle:not(:hover):not(:focus-visible):not(.is-active) {
+  fill-opacity: 0.38;
+  filter: brightness(0.94) saturate(0.92);
+}
+
+.diagram-circle:hover,
+.diagram-circle:focus-visible,
+.diagram-circle.is-active {
+  fill-opacity: 0.86 !important;
+  stroke: #fff;
+  stroke-width: 1.2;
+  filter: url(#diagram-soft-glow) brightness(1.08);
+  /* Parallax vars keep driving translate; bump scale slightly on emphasize */
+  transform:
+    translate(var(--parallax-x), var(--parallax-y))
+    scale(calc(var(--parallax-scale) * 1.035));
+  z-index: 1;
+}
+
+.diagram-circle:focus-visible {
+  stroke: #fff;
+  stroke-width: 1.45;
+  filter:
+    url(#diagram-soft-glow)
+    drop-shadow(0 0 0.35rem rgba(85, 126, 232, 0.55))
+    brightness(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram-circle {
+    --parallax-x: 0px !important;
+    --parallax-y: 0px !important;
+    --parallax-scale: 1 !important;
+    animation: none !important;
+    transition: fill-opacity 160ms ease, stroke-width 160ms ease, stroke 160ms ease;
+    will-change: auto;
+  }
+
+  .diagram-circle:hover,
+  .diagram-circle:focus-visible,
+  .diagram-circle.is-active {
+    transform: none;
+  }
+
+  .diagram-label,
+  .diagram-center {
+    --parallax-x: 0% !important;
+    --parallax-y: 0% !important;
+    transform: none;
+  }
+
+  .diagram-center {
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* Text labels float above the colored circles */
 .diagram-label {
+  --parallax-x: 0%;
+  --parallax-y: 0%;
   position: absolute;
   z-index: 2;
   width: 35%;
@@ -356,6 +465,13 @@ body:has(#monitoring-consent:not([hidden])) {
   font-size: clamp(0.55rem, 1.8vw, 0.8rem);
   line-height: 1.5;
   letter-spacing: 0.04em;
+  pointer-events: none;
+  text-shadow:
+    0 1px 2px rgba(32, 38, 66, 0.28),
+    0 0 10px rgba(32, 38, 66, 0.18);
+  transform: translate(var(--parallax-x), var(--parallax-y));
+  transition: text-shadow 220ms ease;
+  will-change: transform;
 }
 
 .diagram-label strong {
@@ -382,18 +498,36 @@ body:has(#monitoring-consent:not([hidden])) {
   left: 32.5%;
 }
 
+/* Keep labels readable when a circle is emphasized */
+.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
+  .diagram-label {
+  text-shadow: 0 1px 3px rgba(32, 38, 66, 0.35);
+}
+
 /* The center label sits above all four circles */
 .diagram-center {
+  --parallax-x: 0%;
+  --parallax-y: 0%;
   position: absolute;
   z-index: 3;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(calc(-50% + var(--parallax-x)), calc(-50% + var(--parallax-y)));
   color: white;
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.5rem, 5vw, 2.4rem);
   letter-spacing: 0.04em;
   text-shadow: 0 1px 4px rgba(32, 38, 66, 0.12);
+  pointer-events: none;
+  transition: text-shadow 220ms ease, letter-spacing 220ms ease;
+  will-change: transform;
+}
+
+.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
+  .diagram-center,
+.ikigai-diagram.is-parallaxing .diagram-center {
+  text-shadow: 0 2px 10px rgba(32, 38, 66, 0.28);
+  letter-spacing: 0.06em;
 }
 
 #results-message {
