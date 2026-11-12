@@ -32,6 +32,10 @@ const I18N = {
       diagramDescription: "Explore the four parts of your Ikigai.",
       diagramAria:
         "Four overlapping circles representing what you love, what you are good at, what you can be paid for, and what the world needs, meeting at Ikigai.",
+      circleLoveAria: "What you love",
+      circleGoodAria: "What you are good at",
+      circleWorldAria: "What the world needs",
+      circlePaidAria: "What you can be paid for",
       labelLoveHtml: "WHAT YOU<br><strong>LOVE</strong>",
       labelGoodHtml: "WHAT YOU ARE<br><strong>GOOD AT</strong>",
       labelWorldHtml: "WHAT THE WORLD<br><strong>NEEDS</strong>",
@@ -134,6 +138,10 @@ const I18N = {
       diagramDescription: "Entdecke die vier Teile deines Ikigai.",
       diagramAria:
         "Vier überlappende Kreise für das, was du liebst, worin du gut bist, wofür du bezahlt werden kannst und was die Welt braucht — sie treffen sich im Ikigai.",
+      circleLoveAria: "Was du liebst",
+      circleGoodAria: "Worin du gut bist",
+      circleWorldAria: "Was die Welt braucht",
+      circlePaidAria: "Wofür du bezahlt werden kannst",
       labelLoveHtml: "WAS DU<br><strong>LIEBST</strong>",
       labelGoodHtml: "WORIN DU<br><strong>GUT BIST</strong>",
       labelWorldHtml: "WAS DIE WELT<br><strong>BRAUCHT</strong>",
@@ -237,6 +245,10 @@ const I18N = {
       diagramDescription: "Explorez les quatre parties de votre Ikigai.",
       diagramAria:
         "Quatre cercles qui se chevauchent représentant ce que vous aimez, ce en quoi vous êtes doué, ce pour quoi vous pouvez être payé et ce dont le monde a besoin, se rejoignant dans l'Ikigai.",
+      circleLoveAria: "Ce que vous aimez",
+      circleGoodAria: "Ce en quoi vous êtes doué",
+      circleWorldAria: "Ce dont le monde a besoin",
+      circlePaidAria: "Ce pour quoi vous pouvez être payé",
       labelLoveHtml: "CE QUE VOUS<br><strong>AIMEZ</strong>",
       labelGoodHtml: "CE EN QUOI VOUS<br><strong>ÊTES DOUÉ</strong>",
       labelWorldHtml: "CE DONT LE MONDE<br><strong>A BESOIN</strong>",
@@ -340,6 +352,10 @@ const I18N = {
       diagramDescription: "Explorează cele patru părți ale Ikigai-ului tău.",
       diagramAria:
         "Patru cercuri care se suprapun, reprezentând ceea ce iubești, la ce ești bun, pentru ce poți fi plătit și de ce are nevoie lumea, întâlnindu-se în Ikigai.",
+      circleLoveAria: "Ceea ce iubești",
+      circleGoodAria: "La ce ești bun",
+      circleWorldAria: "De ce are nevoie lumea",
+      circlePaidAria: "Pentru ce poți fi plătit",
       labelLoveHtml: "CEEA CE<br><strong>IUBEȘTI</strong>",
       labelGoodHtml: "LA CE EȘTI<br><strong>BUN</strong>",
       labelWorldHtml: "DE CE ARE NEVOIE<br><strong>LUMEA</strong>",
