@@ -25,6 +25,7 @@ const I18N = {
       pageTitle: "Ikigai Finder — Find your Ikigai",
       wordmarkAria: "Ikigai Finder home",
       headerNote: "Finding reason, one question at a time.",
+      headerAbout: "About",
       langLabel: "Language",
       diagramEyebrow: "THE FOUR PILLARS",
       diagramTitle: "Where everything connects",
@@ -79,6 +80,7 @@ const I18N = {
         "\n\n(The full results were too long for email. Please use Print or save as PDF for the complete text.)",
       editAnswers: "Edit my answers",
       footerCredit: "Made by CheckerAndu and DaredCentaur802.",
+      footerAbout: "About",
       footerPrivacy: "Privacy",
       analyticsPreferences: "Analytics preferences",
       monitoringConsentTitle: "Site analytics and performance",
@@ -95,6 +97,7 @@ const I18N = {
         "You've reached today's exploration limit for this browser. Please come back tomorrow so others can try too.",
       backoffMessage:
         "Please wait {time} before exploring again. This keeps the shared AI quota available for first-time visitors.",
+      rateLimitLearnMore: "Learn more about waiting times",
       turnstileMissing:
         "Add TURNSTILE_SITE_KEY in script.js after creating a Cloudflare Turnstile widget.",
       turnstileNotConfigured: "Turnstile is not configured on this page yet.",
@@ -115,6 +118,7 @@ const I18N = {
       pageTitle: "Ikigai Finder — Finde dein Ikigai",
       wordmarkAria: "Ikigai Finder Startseite",
       headerNote: "Sinn finden, eine Frage nach der anderen.",
+      headerAbout: "Über uns",
       langLabel: "Sprache",
       diagramEyebrow: "DIE VIER SÄULEN",
       diagramTitle: "Wo alles zusammenkommt",
@@ -170,6 +174,7 @@ const I18N = {
         "\n\n(Die vollständigen Ergebnisse waren zu lang für eine E-Mail. Bitte nutze Drucken oder als PDF speichern für den kompletten Text.)",
       editAnswers: "Antworten bearbeiten",
       footerCredit: "Erstellt von CheckerAndu und DaredCentaur802.",
+      footerAbout: "Über uns",
       footerPrivacy: "Datenschutz",
       analyticsPreferences: "Analyse-Einstellungen",
       monitoringConsentTitle: "Website-Analyse und Leistung",
@@ -186,6 +191,7 @@ const I18N = {
         "Du hast das heutige Erkundungslimit für diesen Browser erreicht. Bitte komm morgen wieder, damit auch andere es ausprobieren können.",
       backoffMessage:
         "Bitte warte {time}, bevor du erneut erkundest. So bleibt das gemeinsame KI-Kontingent für Erstbesucher verfügbar.",
+      rateLimitLearnMore: "Mehr über Wartezeiten erfahren",
       turnstileMissing:
         "Füge TURNSTILE_SITE_KEY in script.js hinzu, nachdem du ein Cloudflare-Turnstile-Widget erstellt hast.",
       turnstileNotConfigured: "Turnstile ist auf dieser Seite noch nicht konfiguriert.",
@@ -206,6 +212,7 @@ const I18N = {
       pageTitle: "Ikigai Finder — Trouvez votre Ikigai",
       wordmarkAria: "Accueil Ikigai Finder",
       headerNote: "Trouver du sens, une question à la fois.",
+      headerAbout: "À propos",
       langLabel: "Langue",
       diagramEyebrow: "LES QUATRE PILIERS",
       diagramTitle: "Là où tout se rejoint",
@@ -261,6 +268,7 @@ const I18N = {
         "\n\n(Les résultats complets étaient trop longs pour l'e-mail. Utilisez Imprimer ou enregistrer en PDF pour le texte entier.)",
       editAnswers: "Modifier mes réponses",
       footerCredit: "Créé par CheckerAndu et DaredCentaur802.",
+      footerAbout: "À propos",
       footerPrivacy: "Confidentialité",
       analyticsPreferences: "Préférences d'analyse",
       monitoringConsentTitle: "Analyse et performance du site",
@@ -277,6 +285,7 @@ const I18N = {
         "Vous avez atteint la limite d'exploration d'aujourd'hui pour ce navigateur. Revenez demain pour laisser de la place aux autres.",
       backoffMessage:
         "Veuillez attendre {time} avant d'explorer à nouveau. Cela préserve le quota d'IA partagé pour les nouveaux visiteurs.",
+      rateLimitLearnMore: "En savoir plus sur les temps d'attente",
       turnstileMissing:
         "Ajoutez TURNSTILE_SITE_KEY dans script.js après avoir créé un widget Cloudflare Turnstile.",
       turnstileNotConfigured: "Turnstile n'est pas encore configuré sur cette page.",
@@ -297,6 +306,7 @@ const I18N = {
       pageTitle: "Ikigai Finder — Găsește-ți Ikigai",
       wordmarkAria: "Acasă Ikigai Finder",
       headerNote: "Găsirea sensului, o întrebare pe rând.",
+      headerAbout: "Despre",
       langLabel: "Limbă",
       diagramEyebrow: "CEI PATRU STALPI",
       diagramTitle: "Unde totul se leagă",
@@ -352,6 +362,7 @@ const I18N = {
         "\n\n(Rezultatele complete au fost prea lungi pentru e-mail. Folosește Printează sau salvează ca PDF pentru textul întreg.)",
       editAnswers: "Editează răspunsurile",
       footerCredit: "Creat de CheckerAndu și DaredCentaur802.",
+      footerAbout: "Despre",
       footerPrivacy: "Confidențialitate",
       analyticsPreferences: "Preferințe de analiză",
       monitoringConsentTitle: "Analiză și performanță pe site",
@@ -368,6 +379,7 @@ const I18N = {
         "Ai atins limita de explorare de azi pentru acest browser. Te rugăm să revii mâine, ca și alții să poată încerca.",
       backoffMessage:
         "Te rugăm să aștepți {time} înainte de a explora din nou. Așa păstrăm cota AI comună disponibilă pentru vizitatorii noi.",
+      rateLimitLearnMore: "Află mai multe despre timpii de așteptare",
       turnstileMissing:
         "Adaugă TURNSTILE_SITE_KEY în script.js după ce creezi un widget Cloudflare Turnstile.",
       turnstileNotConfigured: "Turnstile nu este încă configurat pe această pagină.",
@@ -497,6 +509,12 @@ function applyTranslations(locale = getLocale()) {
     const key = el.getAttribute("data-i18n-aria");
     if (!key) return;
     el.setAttribute("aria-label", t(key, lang));
+  });
+
+  document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-alt");
+    if (!key) return;
+    el.setAttribute("alt", t(key, lang));
   });
 
   const select = document.querySelector("#lang-select");
