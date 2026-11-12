@@ -68,6 +68,8 @@ const I18N = {
       formFooter: "Your answers are a starting point, not a life-long label.",
       turnstileAria: "Human verification",
       findButton: "Explore my Ikigai",
+      validationRequired: "Please fill out this field.",
+      validationTooShort: "Please enter at least {min} characters.",
       resultsEyebrow: "YOUR NEXT STEP",
       resultsTitle: "Your answers are ready",
       resultsPlaceholder:
@@ -162,6 +164,8 @@ const I18N = {
         "Deine Antworten sind ein Ausgangspunkt, kein lebenslanges Etikett.",
       turnstileAria: "Menschenprüfung",
       findButton: "Mein Ikigai entdecken",
+      validationRequired: "Bitte fülle dieses Feld aus.",
+      validationTooShort: "Bitte gib mindestens {min} Zeichen ein.",
       resultsEyebrow: "DEIN NÄCHSTER SCHRITT",
       resultsTitle: "Deine Antworten sind bereit",
       resultsPlaceholder:
@@ -256,6 +260,8 @@ const I18N = {
         "Vos réponses sont un point de départ, pas une étiquette pour la vie.",
       turnstileAria: "Vérification humaine",
       findButton: "Explorer mon Ikigai",
+      validationRequired: "Veuillez remplir ce champ.",
+      validationTooShort: "Veuillez saisir au moins {min} caractères.",
       resultsEyebrow: "VOTRE PROCHAINE ÉTAPE",
       resultsTitle: "Vos réponses sont prêtes",
       resultsPlaceholder:
@@ -350,6 +356,8 @@ const I18N = {
         "Răspunsurile tale sunt un punct de plecare, nu o etichetă pe viață.",
       turnstileAria: "Verificare umană",
       findButton: "Explorează Ikigai-ul meu",
+      validationRequired: "Te rugăm să completezi acest câmp.",
+      validationTooShort: "Te rugăm să introduci cel puțin {min} caractere.",
       resultsEyebrow: "URMĂTORUL TĂU PAS",
       resultsTitle: "Răspunsurile tale sunt gata",
       resultsPlaceholder:

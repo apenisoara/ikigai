@@ -30,12 +30,42 @@ const RUM_ACTION_COMPLETED = "ikigai_analysis_completed";
 const RUM_ACTION_FAILED = "ikigai_analysis_failed";
 const RUM_TIMING_ANALYSIS = "ikigai_analysis_duration";
 
+const ANSWER_FIELD_NAMES = ["love", "good", "paid", "world"];
+
 let turnstileWidgetId = null;
 let cooldownTimerId = null;
 let requestInFlight = false;
 let currentLocale = I18N.defaultLocale;
 let resultsHoldCustomContent = false;
 let lastSavableResultText = "";
+
+/**
+ * Map HTML constraint failures to localized messages. Clears custom validity
+ * first so the browser re-evaluates required / minlength, then sets a message
+ * in the active app locale (native bubbles ignore document.lang).
+ */
+function syncFieldValidity(field) {
+  if (!field) return;
+
+  field.setCustomValidity("");
+
+  if (field.validity.valueMissing) {
+    field.setCustomValidity(t("validationRequired", currentLocale));
+    return;
+  }
+
+  if (field.validity.tooShort) {
+    field.setCustomValidity(
+      t("validationTooShort", currentLocale, { min: field.minLength })
+    );
+  }
+}
+
+function syncAnswerValidity() {
+  for (const name of ANSWER_FIELD_NAMES) {
+    syncFieldValidity(form.elements[name]);
+  }
+}
 
 /**
  * Stable anonymous browser session id (not IP). Shared NAT / firewall users
@@ -446,6 +476,7 @@ function setLocale(locale) {
   if (!resultsHoldCustomContent) {
     resultsMessage.textContent = t("resultsPlaceholder", currentLocale);
   }
+  syncAnswerValidity();
   syncButtonAvailability();
 }
 
@@ -468,9 +499,17 @@ langSelect?.addEventListener("change", () => {
   setLocale(langSelect.value);
 });
 
+for (const name of ANSWER_FIELD_NAMES) {
+  const field = form.elements[name];
+  if (!field) continue;
+  field.addEventListener("input", () => syncFieldValidity(field));
+  field.addEventListener("invalid", () => syncFieldValidity(field));
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
+  syncAnswerValidity();
   if (!form.reportValidity()) return;
   if (requestInFlight) return;
 
