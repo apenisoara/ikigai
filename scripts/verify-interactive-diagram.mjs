@@ -1,7 +1,7 @@
 /**
  * Playwright verification for the interactive SVG Ikigai diagram (#26).
  * Run: node scripts/verify-interactive-diagram.mjs
- * Expects a static server at BASE_URL (default http://127.0.0.1:8765).
+ * Expects a static server at BASE_URL (default http://127.0.0.1:8000).
  */
 import { chromium } from "playwright";
 import fs from "node:fs";
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const baseUrl = process.env.BASE_URL || "http://127.0.0.1:8765";
+const baseUrl = process.env.BASE_URL || "http://127.0.0.1:8000";
 const outDir =
   process.env.DIAGRAM_OUT_DIR ||
   path.join(repoRoot, "..", "..", "cursor", "stores", "self", "media", "interactive-diagram");
@@ -32,7 +32,6 @@ try {
   await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector(".ikigai-diagram-svg", { timeout: 10000 });
 
-  // Dismiss monitoring consent if present so it does not cover the diagram.
   const accept = page.locator("#monitoring-accept");
   if (await accept.isVisible().catch(() => false)) {
     await accept.click();
@@ -60,11 +59,18 @@ try {
   const loveAria = await love.getAttribute("aria-label");
   record("love aria-label set", Boolean(loveAria && loveAria.length > 2), `aria="${loveAria}"`);
 
-  // Idle shimmer: animation name should be applied (unless reduced motion).
+  const motionMode = await diagram.getAttribute("data-diagram-motion");
+  record(
+    "3d tilt + bell-shake motion mode",
+    motionMode === "3d-tilt-bell-shake",
+    `mode=${motionMode}`
+  );
+
+  // No continuous opacity shimmer — idle motion is discrete bell shakes.
   const idleAnim = await love.evaluate((el) => getComputedStyle(el).animationName);
   record(
-    "idle shimmer animation",
-    idleAnim.includes("diagram-idle-shimmer"),
+    "no continuous idle opacity animation",
+    idleAnim === "none",
     `animationName=${idleAnim}`
   );
 
@@ -74,14 +80,49 @@ try {
     clip: await diagram.boundingBox()
   });
 
-  // Hover the exclusive top crescent of "love" (bbox center is under overlaps).
+  // Trigger a single-circle bell shake via test hook.
+  const shakeResult = await page.evaluate(() => {
+    const root = document.querySelector(".ikigai-diagram");
+    const api = root && root._ikigaiDiagramTest;
+    if (!api) return { ok: false, reason: "missing test hook" };
+    const ok = api.triggerShake("love");
+    return { ok, key: api.getShakeKey() };
+  });
+  record(
+    "bell shake triggers one circle",
+    shakeResult.ok && shakeResult.key === "love",
+    JSON.stringify(shakeResult)
+  );
+  await page.waitForTimeout(120);
+  const loveShaking = await love.evaluate((el) => el.classList.contains("is-shaking"));
+  const othersShaking = await page.evaluate(() =>
+    Array.from(document.querySelectorAll(".diagram-circle.is-shaking")).map((el) =>
+      el.getAttribute("data-circle")
+    )
+  );
+  record(
+    "only one circle shakes at a time",
+    loveShaking && othersShaking.length === 1,
+    `shaking=${othersShaking.join(",")}`
+  );
+
+  await page.screenshot({
+    path: path.join(outDir, "diagram_bell_shake_love.png"),
+    fullPage: false,
+    clip: await diagram.boundingBox()
+  });
+
+  // Wait for shake to finish
+  await page.waitForTimeout(520);
+
+  // Hover the exclusive top crescent of "love".
   const loveBox = await love.boundingBox();
   if (!loveBox) throw new Error("love circle has no bounding box");
   await page.mouse.move(
     loveBox.x + loveBox.width * 0.5,
     loveBox.y + loveBox.height * 0.18
   );
-  await page.waitForTimeout(280);
+  await page.waitForTimeout(320);
   const interacting = await diagram.evaluate((el) => el.classList.contains("is-interacting"));
   const loveActive = await love.evaluate((el) => el.classList.contains("is-active"));
   const loveOpacity = await love.evaluate((el) => getComputedStyle(el).fillOpacity);
@@ -121,7 +162,7 @@ try {
     clip: await diagram.boundingBox()
   });
 
-  // prefers-reduced-motion disables idle animation
+  // prefers-reduced-motion: no tilt / no shake hook effect
   const reduced = await browser.newPage({
     viewport: { width: 1100, height: 900 },
     reducedMotion: "reduce"
@@ -132,37 +173,42 @@ try {
   if (await reducedAccept.isVisible().catch(() => false)) {
     await reducedAccept.click();
   }
-  const reducedLove = reduced.locator('.diagram-circle[data-circle="love"]');
-  const reducedAnim = await reducedLove.evaluate((el) => getComputedStyle(el).animationName);
+  const reducedShake = await reduced.evaluate(() => {
+    const root = document.querySelector(".ikigai-diagram");
+    const api = root && root._ikigaiDiagramTest;
+    if (!api) return { ok: false };
+    return { ok: api.triggerShake("love"), key: api.getShakeKey() };
+  });
   record(
-    "reduced-motion disables shimmer",
-    reducedAnim === "none",
-    `animationName=${reducedAnim}`
+    "reduced-motion blocks bell shake",
+    reducedShake.ok === false && !reducedShake.key,
+    JSON.stringify(reducedShake)
   );
   await reduced.close();
 
-  // Labels still visible / readable
   const labelLoveVisible = await page.locator(".label-love").isVisible();
   const centerVisible = await page.locator(".diagram-center").isVisible();
   record("labels remain visible", labelLoveVisible && centerVisible);
 
-  // Parallax: move through the diagram center and expect non-zero offsets.
+  // 3D parallax: move through center and expect tilt + depth vars.
   const dbox = await diagram.boundingBox();
-  await page.mouse.move(dbox.x + dbox.width * 0.5, dbox.y + dbox.height * 0.5, {
-    steps: 8
+  await page.mouse.move(dbox.x + dbox.width * 0.5, dbox.y + dbox.height * 0.42, {
+    steps: 10
   });
-  await page.waitForTimeout(350);
-  const parallaxSample = await love.evaluate((el) => ({
-    x: getComputedStyle(el).getPropertyValue("--parallax-x").trim(),
-    y: getComputedStyle(el).getPropertyValue("--parallax-y").trim(),
+  await page.waitForTimeout(400);
+  const tiltSample = await love.evaluate((el) => ({
+    rx: getComputedStyle(el).getPropertyValue("--parallax-rx").trim(),
+    ry: getComputedStyle(el).getPropertyValue("--parallax-ry").trim(),
+    z: getComputedStyle(el).getPropertyValue("--parallax-z").trim(),
     parallaxing: el.closest(".ikigai-diagram")?.classList.contains("is-parallaxing")
   }));
-  const parallaxX = Number.parseFloat(parallaxSample.x) || 0;
-  const parallaxY = Number.parseFloat(parallaxSample.y) || 0;
+  const rx = Number.parseFloat(tiltSample.rx) || 0;
+  const ry = Number.parseFloat(tiltSample.ry) || 0;
+  const z = Number.parseFloat(tiltSample.z) || 0;
   record(
-    "parallax offsets while pointer inside",
-    parallaxSample.parallaxing && (Math.abs(parallaxX) > 0.5 || Math.abs(parallaxY) > 0.5),
-    `x=${parallaxSample.x} y=${parallaxSample.y} parallaxing=${parallaxSample.parallaxing}`
+    "3d tilt while pointer inside",
+    tiltSample.parallaxing && (Math.abs(rx) > 0.4 || Math.abs(ry) > 0.4 || Math.abs(z) > 1),
+    `rx=${tiltSample.rx} ry=${tiltSample.ry} z=${tiltSample.z}`
   );
 
   await page.screenshot({
@@ -171,7 +217,6 @@ try {
     clip: await diagram.boundingBox()
   });
 
-  // Locale aria updates
   await page.selectOption("#lang-select", "de");
   await page.waitForTimeout(100);
   const deAria = await love.getAttribute("aria-label");
@@ -181,7 +226,6 @@ try {
     `aria="${deAria}"`
   );
 
-  // Explore form still present / untouched surface
   const form = page.locator("#ikigai-form");
   const findBtn = page.locator("#find-button");
   record("explore form intact", (await form.count()) === 1 && (await findBtn.count()) === 1);

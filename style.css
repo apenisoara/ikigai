@@ -312,6 +312,9 @@ body:has(#monitoring-consent:not([hidden])) {
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   outline: none;
+  perspective: 900px;
+  perspective-origin: 50% 48%;
+  transform-style: preserve-3d;
 }
 
 .ikigai-diagram-svg {
@@ -319,19 +322,29 @@ body:has(#monitoring-consent:not([hidden])) {
   width: 100%;
   height: 100%;
   overflow: visible;
+  transform-style: preserve-3d;
 }
 
 /* Vector circles — colors match the previous CSS diagram */
 .diagram-circle {
   --parallax-x: 0px;
   --parallax-y: 0px;
+  --parallax-z: 0px;
+  --parallax-rx: 0deg;
+  --parallax-ry: 0deg;
+  --parallax-rz: 0deg;
   --parallax-scale: 1;
   fill-opacity: 0.55;
   stroke: rgba(255, 255, 255, 0.95);
   stroke-width: 0.55;
   transform-box: fill-box;
   transform-origin: center;
-  transform: translate(var(--parallax-x), var(--parallax-y)) scale(var(--parallax-scale));
+  transform:
+    translate3d(var(--parallax-x), var(--parallax-y), var(--parallax-z))
+    rotateX(var(--parallax-rx))
+    rotateY(var(--parallax-ry))
+    rotateZ(var(--parallax-rz))
+    scale(var(--parallax-scale));
   transition:
     fill-opacity 220ms ease,
     stroke-width 220ms ease,
@@ -339,61 +352,28 @@ body:has(#monitoring-consent:not([hidden])) {
     filter 220ms ease;
   cursor: pointer;
   outline: none;
-  animation: diagram-idle-shimmer 5.6s ease-in-out infinite;
   will-change: transform;
 }
 
 .diagram-circle.circle-love {
   fill: rgb(120, 169, 237);
-  animation-delay: 0s;
 }
 
 .diagram-circle.circle-good {
   fill: rgb(195, 166, 230);
-  animation-delay: -1.4s;
 }
 
 .diagram-circle.circle-world {
   fill: rgb(146, 120, 222);
   fill-opacity: 0.4;
-  animation-name: diagram-idle-shimmer-world;
-  animation-delay: -2.8s;
 }
 
 .diagram-circle.circle-paid {
   fill: rgb(120, 169, 237);
-  animation-delay: -4.2s;
 }
 
-@keyframes diagram-idle-shimmer {
-  0%,
-  100% {
-    fill-opacity: 0.5;
-    filter: brightness(1);
-  }
-  50% {
-    fill-opacity: 0.66;
-    filter: brightness(1.06);
-  }
-}
-
-/* World stays a touch softer than the other three at rest */
-@keyframes diagram-idle-shimmer-world {
-  0%,
-  100% {
-    fill-opacity: 0.36;
-    filter: brightness(1);
-  }
-  50% {
-    fill-opacity: 0.5;
-    filter: brightness(1.06);
-  }
-}
-
-/* Drop idle shimmer while exploring so hover opacity rules win */
-.ikigai-diagram.is-interacting .diagram-circle,
-.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible) .diagram-circle {
-  animation: none;
+.diagram-circle.is-shaking {
+  filter: brightness(1.04);
 }
 
 /* Soften siblings gently — keep enough fill so labels stay readable */
@@ -410,9 +390,11 @@ body:has(#monitoring-consent:not([hidden])) {
   stroke: #fff;
   stroke-width: 1.2;
   filter: url(#diagram-soft-glow) brightness(1.08);
-  /* Parallax vars keep driving translate; bump scale slightly on emphasize */
   transform:
-    translate(var(--parallax-x), var(--parallax-y))
+    translate3d(var(--parallax-x), var(--parallax-y), var(--parallax-z))
+    rotateX(var(--parallax-rx))
+    rotateY(var(--parallax-ry))
+    rotateZ(var(--parallax-rz))
     scale(calc(var(--parallax-scale) * 1.035));
   z-index: 1;
 }
@@ -430,8 +412,11 @@ body:has(#monitoring-consent:not([hidden])) {
   .diagram-circle {
     --parallax-x: 0px !important;
     --parallax-y: 0px !important;
+    --parallax-z: 0px !important;
+    --parallax-rx: 0deg !important;
+    --parallax-ry: 0deg !important;
+    --parallax-rz: 0deg !important;
     --parallax-scale: 1 !important;
-    animation: none !important;
     transition: fill-opacity 160ms ease, stroke-width 160ms ease, stroke 160ms ease;
     will-change: auto;
   }
@@ -446,6 +431,10 @@ body:has(#monitoring-consent:not([hidden])) {
   .diagram-center {
     --parallax-x: 0% !important;
     --parallax-y: 0% !important;
+    --parallax-z: 0px !important;
+    --parallax-rx: 0deg !important;
+    --parallax-ry: 0deg !important;
+    --parallax-rz: 0deg !important;
     transform: none;
   }
 
@@ -458,6 +447,10 @@ body:has(#monitoring-consent:not([hidden])) {
 .diagram-label {
   --parallax-x: 0%;
   --parallax-y: 0%;
+  --parallax-z: 0px;
+  --parallax-rx: 0deg;
+  --parallax-ry: 0deg;
+  --parallax-rz: 0deg;
   position: absolute;
   z-index: 2;
   width: 35%;
@@ -469,7 +462,12 @@ body:has(#monitoring-consent:not([hidden])) {
   text-shadow:
     0 1px 2px rgba(32, 38, 66, 0.28),
     0 0 10px rgba(32, 38, 66, 0.18);
-  transform: translate(var(--parallax-x), var(--parallax-y));
+  transform:
+    translate3d(var(--parallax-x), var(--parallax-y), var(--parallax-z))
+    rotateX(var(--parallax-rx))
+    rotateY(var(--parallax-ry))
+    rotateZ(var(--parallax-rz));
+  transform-origin: center;
   transition: text-shadow 220ms ease;
   will-change: transform;
 }
@@ -512,7 +510,7 @@ body:has(#monitoring-consent:not([hidden])) {
   z-index: 3;
   top: 50%;
   left: 50%;
-  transform: translate(calc(-50% + var(--parallax-x)), calc(-50% + var(--parallax-y)));
+  transform: translate3d(calc(-50% + var(--parallax-x)), calc(-50% + var(--parallax-y)), 0);
   color: white;
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.5rem, 5vw, 2.4rem);
