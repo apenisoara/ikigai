@@ -190,25 +190,47 @@ try {
   const centerVisible = await page.locator(".diagram-center").isVisible();
   record("labels remain visible", labelLoveVisible && centerVisible);
 
-  // 3D parallax: move through center and expect tilt + depth vars.
+  // 3D hinged tilt: offset from a circle center so rotateX/Y is clearly engaged.
   const dbox = await diagram.boundingBox();
-  await page.mouse.move(dbox.x + dbox.width * 0.5, dbox.y + dbox.height * 0.42, {
+  // Aim toward the lower-right of the love disc (not dead center).
+  await page.mouse.move(dbox.x + dbox.width * 0.58, dbox.y + dbox.height * 0.28, {
     steps: 10
   });
-  await page.waitForTimeout(400);
-  const tiltSample = await love.evaluate((el) => ({
-    rx: getComputedStyle(el).getPropertyValue("--parallax-rx").trim(),
-    ry: getComputedStyle(el).getPropertyValue("--parallax-ry").trim(),
-    z: getComputedStyle(el).getPropertyValue("--parallax-z").trim(),
-    parallaxing: el.closest(".ikigai-diagram")?.classList.contains("is-parallaxing")
-  }));
+  await page.waitForTimeout(420);
+  const tiltSample = await love.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return {
+      rx: cs.getPropertyValue("--parallax-rx").trim(),
+      ry: cs.getPropertyValue("--parallax-ry").trim(),
+      z: cs.getPropertyValue("--parallax-z").trim(),
+      transform: cs.transform,
+      width: el.getBoundingClientRect().width,
+      parallaxing: el.closest(".ikigai-diagram")?.classList.contains("is-parallaxing")
+    };
+  });
+  const restWidth = await page.evaluate(() => {
+    const el = document.querySelector('.diagram-circle[data-circle="paid"]');
+    // paid is far from the pointer above — use as approximate rest width baseline
+    return el.getBoundingClientRect().width;
+  });
   const rx = Number.parseFloat(tiltSample.rx) || 0;
   const ry = Number.parseFloat(tiltSample.ry) || 0;
   const z = Number.parseFloat(tiltSample.z) || 0;
+  const tiltMag = Math.hypot(rx, ry);
   record(
-    "3d tilt while pointer inside",
-    tiltSample.parallaxing && (Math.abs(rx) > 0.4 || Math.abs(ry) > 0.4 || Math.abs(z) > 1),
-    `rx=${tiltSample.rx} ry=${tiltSample.ry} z=${tiltSample.z}`
+    "readable hinged 3d tilt",
+    tiltSample.parallaxing && tiltMag >= 12 && tiltSample.transform.startsWith("matrix3d"),
+    `rx=${tiltSample.rx} ry=${tiltSample.ry} |tilt|=${tiltMag.toFixed(1)} z=${tiltSample.z}`
+  );
+  record(
+    "uniform Z stays secondary",
+    Math.abs(z) <= 10,
+    `z=${tiltSample.z}`
+  );
+  record(
+    "tilt foreshortens circle bounds",
+    Math.abs(tiltSample.width - restWidth) > 4,
+    `tiltedW=${tiltSample.width.toFixed(1)} restW=${restWidth.toFixed(1)}`
   );
 
   await page.screenshot({
