@@ -20,16 +20,16 @@
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  /** Max planar parting in viewBox units (tilt is the primary depth cue). */
-  const MAX_PUSH = 1.5;
-  /** Max hinged tilt (deg). Large enough to foreshorten overlapping discs. */
-  const MAX_TILT = 26;
-  /** Tiny rigid Z (px) — secondary only; hinged rotateX/Y does the depth. */
-  const MAX_Z = 6;
+  /** Max planar parting in viewBox units (kept modest — tilt carries the 3D feel). */
+  const MAX_PUSH = 2.4;
+  /** Max tilt toward / away from the cursor (deg). Tasteful card-tilt range. */
+  const MAX_TILT = 14;
+  /** Max depth sink when the cursor is near (px). */
+  const MAX_Z = 28;
   /** Distance (viewBox units) where influence falls to zero. */
-  const INFLUENCE_RADIUS = 52;
+  const INFLUENCE_RADIUS = 48;
   /** Lerp factor per frame toward targets. */
-  const EASE = 0.22;
+  const EASE = 0.2;
   /** Rest-position radius used for hit-testing (matches SVG r). */
   const HIT_RADIUS = 29;
 
@@ -50,14 +50,12 @@
     rx: 0,
     ry: 0,
     scale: 1,
-    shade: 1,
     tx: 0,
     ty: 0,
     tz: 0,
     tRx: 0,
     tRy: 0,
-    tScale: 1,
-    tShade: 1
+    tScale: 1
   }));
 
   let pointerInside = false;
@@ -115,8 +113,8 @@
   }
 
   /**
-   * Cursor-driven 3D response: hinged tilt so the near rim sinks into Z and the
-   * opposite rim comes forward (perspective rotateX/Y). Uniform Z is minimal.
+   * Cursor-driven 3D response: circles incline as if the pointer passes through
+   * them in depth — near edge sinks back, face tilts toward the path, slight part.
    */
   function computeTargets(px, py) {
     let avgX = 0;
@@ -125,39 +123,33 @@
     for (const item of state) {
       const dx = item.cx - px; // center ← cursor (push-away axis)
       const dy = item.cy - py;
-      const ox = px - item.cx; // cursor relative to center (hinge direction)
+      const ox = px - item.cx; // cursor relative to center (tilt axis)
       const oy = py - item.cy;
-      const dist = Math.hypot(ox, oy) || 0.0001;
+      const dist = Math.hypot(dx, dy) || 0.0001;
       const t = Math.max(0, 1 - dist / INFLUENCE_RADIUS);
-      // Smoothstep — strong while the pointer is on / near the disc.
+      // Smoothstep falloff — stronger when the pointer is on the disc.
       const influence = t * t * (3 - 2 * t);
-      // Unit direction from center → cursor: which rim is "near".
-      const nx = ox / dist;
-      const ny = oy / dist;
 
-      item.tx = (dx / dist) * MAX_PUSH * influence * 0.85;
-      item.ty = (dy / dist) * MAX_PUSH * influence * 0.85;
-      // Keep rigid Z tiny so hinged rotation owns the depth read.
+      item.tx = (dx / dist) * MAX_PUSH * influence;
+      item.ty = (dy / dist) * MAX_PUSH * influence;
+      // Sink back in Z as the cursor moves through the circle.
       item.tz = -MAX_Z * influence;
 
-      // Hinge: near-cursor rim tips away from the viewer (into the screen).
-      // Use direction × influence (not ox/R × influence) so on-disc offsets
-      // reach a readable fraction of MAX_TILT instead of staying ~5°.
-      item.tRy = clamp(-nx * MAX_TILT * influence, -MAX_TILT, MAX_TILT);
-      item.tRx = clamp(ny * MAX_TILT * influence, -MAX_TILT, MAX_TILT);
+      // Incline: edge nearest the cursor tips away (making space in depth).
+      const tilt = influence * MAX_TILT;
+      item.tRy = clamp((-ox / HIT_RADIUS) * tilt, -MAX_TILT, MAX_TILT);
+      item.tRx = clamp((oy / HIT_RADIUS) * tilt, -MAX_TILT, MAX_TILT);
 
-      const tiltMag = Math.min(1, Math.hypot(item.tRx, item.tRy) / MAX_TILT);
-      // Soft shade: receding discs read slightly dimmer (depth cue).
-      item.tShade = 1 - tiltMag * 0.14;
-      item.tScale = 1 - tiltMag * 0.02;
+      // Slight scale: nearer (more influence) reads a touch smaller (farther in Z).
+      item.tScale = 1 - influence * 0.035;
 
       avgX += item.tx;
       avgY += item.ty;
     }
 
     return {
-      centerX: -(avgX / state.length) * 0.2,
-      centerY: -(avgY / state.length) * 0.2
+      centerX: -(avgX / state.length) * 0.25,
+      centerY: -(avgY / state.length) * 0.25
     };
   }
 
@@ -169,7 +161,6 @@
       item.tRx = 0;
       item.tRy = 0;
       item.tScale = 1;
-      item.tShade = 1;
     }
     return { centerX: 0, centerY: 0 };
   }
@@ -217,14 +208,13 @@
       item.el.style.setProperty("--parallax-ry", `${item.ry.toFixed(2)}deg`);
       item.el.style.setProperty("--parallax-rz", `${srz.toFixed(2)}deg`);
       item.el.style.setProperty("--parallax-scale", item.scale.toFixed(4));
-      item.el.style.setProperty("--tilt-brightness", item.shade.toFixed(3));
       item.el.classList.toggle("is-shaking", isShaking);
 
       const label = labelByKey[item.key];
       if (label) {
         label.style.setProperty("--parallax-x", `${(item.x + sx * 0.15).toFixed(3)}%`);
         label.style.setProperty("--parallax-y", `${(item.y + sy * 0.15).toFixed(3)}%`);
-        label.style.setProperty("--parallax-z", `${(item.z * 0.5).toFixed(2)}px`);
+        label.style.setProperty("--parallax-z", `${(item.z * 0.35).toFixed(2)}px`);
         label.style.setProperty("--parallax-rx", `${item.rx.toFixed(2)}deg`);
         label.style.setProperty("--parallax-ry", `${item.ry.toFixed(2)}deg`);
         label.style.setProperty("--parallax-rz", `${(srz * 0.5).toFixed(2)}deg`);
@@ -248,7 +238,6 @@
         item.rx = 0;
         item.ry = 0;
         item.scale = 1;
-        item.shade = 1;
       }
       centerCurrent.x = 0;
       centerCurrent.y = 0;
@@ -266,15 +255,13 @@
       item.rx += (item.tRx - item.rx) * EASE;
       item.ry += (item.tRy - item.ry) * EASE;
       item.scale += (item.tScale - item.scale) * EASE;
-      item.shade += (item.tShade - item.shade) * EASE;
       if (
         Math.abs(item.tx - item.x) > 0.02 ||
         Math.abs(item.ty - item.y) > 0.02 ||
-        Math.abs(item.tz - item.z) > 0.15 ||
-        Math.abs(item.tRx - item.rx) > 0.08 ||
-        Math.abs(item.tRy - item.ry) > 0.08 ||
-        Math.abs(item.tScale - item.scale) > 0.002 ||
-        Math.abs(item.tShade - item.shade) > 0.002
+        Math.abs(item.tz - item.z) > 0.2 ||
+        Math.abs(item.tRx - item.rx) > 0.05 ||
+        Math.abs(item.tRy - item.ry) > 0.05 ||
+        Math.abs(item.tScale - item.scale) > 0.002
       ) {
         moving = true;
       }
@@ -456,8 +443,7 @@
         "--parallax-rx",
         "--parallax-ry",
         "--parallax-rz",
-        "--parallax-scale",
-        "--tilt-brightness"
+        "--parallax-scale"
       ].forEach((prop) => item.el.style.removeProperty(prop));
       item.el.classList.remove("is-shaking");
       const label = labelByKey[item.key];
@@ -493,7 +479,6 @@
         item.rx = 0;
         item.ry = 0;
         item.scale = 1;
-        item.shade = 1;
       }
       centerCurrent.x = 0;
       centerCurrent.y = 0;
