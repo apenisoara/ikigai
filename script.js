@@ -36,6 +36,13 @@ let requestInFlight = false;
 let currentLocale = I18N.defaultLocale;
 let resultsHoldCustomContent = false;
 let lastSavableResultText = "";
+let waitFeedbackActive = false;
+let waitFeedbackStartedAt = 0;
+let waitTipIndex = 0;
+let waitTipTimerId = null;
+let waitElapsedTimerId = null;
+
+const WAIT_TIP_INTERVAL_MS = 3500;
 
 /**
  * Stable anonymous browser session id (not IP). Shared NAT / firewall users
@@ -336,7 +343,104 @@ function clearSavableResult() {
   setSaveActionsVisible(false);
 }
 
+function formatElapsedWait(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  if (totalSeconds < 60) return `${totalSeconds}s`;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+}
+
+function stopWaitFeedback() {
+  waitFeedbackActive = false;
+  if (waitTipTimerId) {
+    clearInterval(waitTipTimerId);
+    waitTipTimerId = null;
+  }
+  if (waitElapsedTimerId) {
+    clearInterval(waitElapsedTimerId);
+    waitElapsedTimerId = null;
+  }
+}
+
+function paintWaitFeedback() {
+  const tips = tList("waitTips", currentLocale);
+  const tipText = tips.length ? tips[waitTipIndex % tips.length] : "";
+
+  resultsMessage.replaceChildren();
+
+  const panel = document.createElement("div");
+  panel.className = "wait-panel";
+
+  const status = document.createElement("p");
+  status.className = "wait-status";
+  status.setAttribute("role", "status");
+
+  const pulse = document.createElement("span");
+  pulse.className = "wait-pulse";
+  pulse.setAttribute("aria-hidden", "true");
+
+  status.appendChild(pulse);
+  status.appendChild(document.createTextNode(t("analysing", currentLocale)));
+
+  const tip = document.createElement("p");
+  tip.className = "wait-tip is-visible";
+  tip.setAttribute("aria-hidden", "true");
+  tip.textContent = tipText;
+
+  const elapsed = document.createElement("p");
+  elapsed.className = "wait-elapsed";
+  elapsed.setAttribute("aria-hidden", "true");
+  elapsed.textContent = t("waitElapsed", currentLocale, {
+    time: formatElapsedWait(Date.now() - waitFeedbackStartedAt)
+  });
+
+  panel.append(status, tip, elapsed);
+  resultsMessage.appendChild(panel);
+}
+
+function updateWaitElapsed() {
+  const elapsed = resultsMessage.querySelector(".wait-elapsed");
+  if (!elapsed || !waitFeedbackActive) return;
+  elapsed.textContent = t("waitElapsed", currentLocale, {
+    time: formatElapsedWait(Date.now() - waitFeedbackStartedAt)
+  });
+}
+
+function advanceWaitTip() {
+  if (!waitFeedbackActive) return;
+  const tips = tList("waitTips", currentLocale);
+  if (!tips.length) return;
+
+  waitTipIndex = (waitTipIndex + 1) % tips.length;
+  const tip = resultsMessage.querySelector(".wait-tip");
+  if (!tip) return;
+
+  tip.classList.remove("is-visible");
+  // Restart the soft fade without rebuilding the live region.
+  void tip.offsetWidth;
+  tip.textContent = tips[waitTipIndex];
+  tip.classList.add("is-visible");
+}
+
+function startWaitFeedback() {
+  stopWaitFeedback();
+  waitFeedbackActive = true;
+  waitFeedbackStartedAt = Date.now();
+  waitTipIndex = 0;
+
+  results.hidden = false;
+  resultsHoldCustomContent = true;
+  clearSavableResult();
+  paintWaitFeedback();
+  results.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  waitElapsedTimerId = setInterval(updateWaitElapsed, 1000);
+  waitTipTimerId = setInterval(advanceWaitTip, WAIT_TIP_INTERVAL_MS);
+}
+
 function showResultsMessage(text) {
+  stopWaitFeedback();
   results.hidden = false;
   resultsHoldCustomContent = true;
   clearSavableResult();
@@ -346,6 +450,7 @@ function showResultsMessage(text) {
 }
 
 function showRateLimitMessage(text) {
+  stopWaitFeedback();
   results.hidden = false;
   resultsHoldCustomContent = true;
   clearSavableResult();
@@ -366,6 +471,7 @@ function showRateLimitMessage(text) {
 }
 
 function renderAnalysis(text) {
+  stopWaitFeedback();
   resultsHoldCustomContent = true;
   lastSavableResultText = text.trim();
   setSaveActionsVisible(Boolean(lastSavableResultText));
@@ -443,7 +549,9 @@ function buildEmailHref(resultText) {
 
 function setLocale(locale) {
   currentLocale = applyTranslations(locale);
-  if (!resultsHoldCustomContent) {
+  if (waitFeedbackActive) {
+    paintWaitFeedback();
+  } else if (!resultsHoldCustomContent) {
     resultsMessage.textContent = t("resultsPlaceholder", currentLocale);
   }
   syncButtonAvailability();
@@ -513,7 +621,7 @@ form.addEventListener("submit", async (event) => {
   requestInFlight = true;
   findButton.disabled = true;
   setFindButtonLabel(t("exploring", currentLocale));
-  showResultsMessage(t("analysing", currentLocale));
+  startWaitFeedback();
 
   try {
     // Count the attempt before the network call so refresh/spam mid-flight still backs off.
@@ -592,6 +700,7 @@ form.addEventListener("submit", async (event) => {
       showResultsMessage(message);
     }
   } finally {
+    stopWaitFeedback();
     requestInFlight = false;
     resetTurnstile();
     startCooldownTicker();
@@ -610,6 +719,7 @@ emailResultsButton?.addEventListener("click", () => {
 });
 
 editAnswersButton.addEventListener("click", () => {
+  stopWaitFeedback();
   results.hidden = true;
   resultsHoldCustomContent = false;
   clearSavableResult();

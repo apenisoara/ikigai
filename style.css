@@ -408,6 +408,78 @@ body:has(#monitoring-consent:not([hidden])) {
   line-height: 1.8;
 }
 
+.wait-panel {
+  display: grid;
+  gap: 0.7rem;
+  max-width: 42rem;
+}
+
+.wait-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  color: var(--ink);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.wait-pulse {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 0 rgba(85, 126, 232, 0.35);
+  animation: wait-pulse 1.5s ease-in-out infinite;
+}
+
+.wait-tip {
+  margin: 0;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(0.25rem);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.wait-tip.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.wait-elapsed {
+  margin: 0;
+  color: #9aa1b5;
+  font-size: 0.86rem;
+  letter-spacing: -0.01em;
+}
+
+@keyframes wait-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.86);
+    box-shadow: 0 0 0 0 rgba(85, 126, 232, 0.28);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(85, 126, 232, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wait-pulse {
+    animation: none;
+    opacity: 0.85;
+    box-shadow: none;
+  }
+
+  .wait-tip {
+    transition: none;
+  }
+}
+
 #results-message p {
   display: block;
   white-space: normal;
