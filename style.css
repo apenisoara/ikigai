@@ -312,7 +312,8 @@ body:has(#monitoring-consent:not([hidden])) {
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   outline: none;
-  perspective: 900px;
+  /* Stronger perspective so hinged rotateX/Y foreshortens clearly */
+  perspective: 720px;
   perspective-origin: 50% 48%;
   transform-style: preserve-3d;
 }
@@ -334,6 +335,7 @@ body:has(#monitoring-consent:not([hidden])) {
   --parallax-ry: 0deg;
   --parallax-rz: 0deg;
   --parallax-scale: 1;
+  --tilt-brightness: 1;
   fill-opacity: 0.55;
   stroke: rgba(255, 255, 255, 0.95);
   stroke-width: 0.55;
@@ -345,14 +347,14 @@ body:has(#monitoring-consent:not([hidden])) {
     rotateY(var(--parallax-ry))
     rotateZ(var(--parallax-rz))
     scale(var(--parallax-scale));
+  filter: brightness(var(--tilt-brightness));
   transition:
     fill-opacity 220ms ease,
     stroke-width 220ms ease,
-    stroke 220ms ease,
-    filter 220ms ease;
+    stroke 220ms ease;
   cursor: pointer;
   outline: none;
-  will-change: transform;
+  will-change: transform, filter;
 }
 
 .diagram-circle.circle-love {
@@ -373,14 +375,14 @@ body:has(#monitoring-consent:not([hidden])) {
 }
 
 .diagram-circle.is-shaking {
-  filter: brightness(1.04);
+  filter: brightness(calc(var(--tilt-brightness) * 1.04));
 }
 
 /* Soften siblings gently — keep enough fill so labels stay readable */
 .ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
   .diagram-circle:not(:hover):not(:focus-visible):not(.is-active) {
   fill-opacity: 0.38;
-  filter: brightness(0.94) saturate(0.92);
+  filter: brightness(calc(var(--tilt-brightness) * 0.94)) saturate(0.92);
 }
 
 .diagram-circle:hover,
@@ -389,13 +391,13 @@ body:has(#monitoring-consent:not([hidden])) {
   fill-opacity: 0.86 !important;
   stroke: #fff;
   stroke-width: 1.2;
-  filter: url(#diagram-soft-glow) brightness(1.08);
+  filter: url(#diagram-soft-glow) brightness(calc(var(--tilt-brightness) * 1.06));
   transform:
     translate3d(var(--parallax-x), var(--parallax-y), var(--parallax-z))
     rotateX(var(--parallax-rx))
     rotateY(var(--parallax-ry))
     rotateZ(var(--parallax-rz))
-    scale(calc(var(--parallax-scale) * 1.035));
+    scale(calc(var(--parallax-scale) * 1.03));
   z-index: 1;
 }
 
@@ -405,7 +407,7 @@ body:has(#monitoring-consent:not([hidden])) {
   filter:
     url(#diagram-soft-glow)
     drop-shadow(0 0 0.35rem rgba(85, 126, 232, 0.55))
-    brightness(1.08);
+    brightness(calc(var(--tilt-brightness) * 1.06));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -417,6 +419,8 @@ body:has(#monitoring-consent:not([hidden])) {
     --parallax-ry: 0deg !important;
     --parallax-rz: 0deg !important;
     --parallax-scale: 1 !important;
+    --tilt-brightness: 1 !important;
+    filter: none;
     transition: fill-opacity 160ms ease, stroke-width 160ms ease, stroke 160ms ease;
     will-change: auto;
   }
