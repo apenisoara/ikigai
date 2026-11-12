@@ -454,6 +454,16 @@ body:has(#monitoring-consent:not([hidden])) {
   letter-spacing: -0.01em;
 }
 
+/* Interim SSE draft: plain growing text until done → renderAnalysis. */
+.stream-draft {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  line-height: 1.8;
+  opacity: 0.92;
+}
+
 @keyframes wait-pulse {
   0%,
   100% {
