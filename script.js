@@ -345,6 +345,26 @@ function showResultsMessage(text) {
   results.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function showRateLimitMessage(text) {
+  results.hidden = false;
+  resultsHoldCustomContent = true;
+  clearSavableResult();
+  resultsMessage.replaceChildren();
+
+  const message = document.createElement("p");
+  message.textContent = text;
+  resultsMessage.appendChild(message);
+
+  const more = document.createElement("p");
+  const link = document.createElement("a");
+  link.href = "about.html#rate-limiting";
+  link.textContent = t("rateLimitLearnMore", currentLocale);
+  more.appendChild(link);
+  resultsMessage.appendChild(more);
+
+  results.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function renderAnalysis(text) {
   resultsHoldCustomContent = true;
   lastSavableResultText = text.trim();
@@ -456,7 +476,7 @@ form.addEventListener("submit", async (event) => {
 
   const gate = getGate();
   if (!gate.ok) {
-    showResultsMessage(gate.message);
+    showRateLimitMessage(gate.message);
     startCooldownTicker();
     return;
   }
@@ -516,9 +536,11 @@ form.addEventListener("submit", async (event) => {
       });
 
       applyServerCooldown(retryAfter || Math.ceil(backoffMs(readRateState().streak) / 1000));
-      throw new Error(
+      const rateLimitError = new Error(
         data.error || t("tooManyRequests", currentLocale)
       );
+      rateLimitError.isRateLimit = true;
+      throw rateLimitError;
     }
 
     if (!response.ok || data.error) {
@@ -560,11 +582,15 @@ form.addEventListener("submit", async (event) => {
     });
 
     console.error("Ikigai request failed:", error);
-    showResultsMessage(
+    const message =
       error?.message && !/failed to fetch|networkerror/i.test(error.message)
         ? error.message
-        : t("networkError", currentLocale)
-    );
+        : t("networkError", currentLocale);
+    if (error?.isRateLimit) {
+      showRateLimitMessage(message);
+    } else {
+      showResultsMessage(message);
+    }
   } finally {
     requestInFlight = false;
     resetTurnstile();

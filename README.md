@@ -24,5 +24,8 @@ The first page and form validation are in place. The AI analysis is not connecte
 ## Project structure
 
 - `index.html` — page structure and form
+- `about.html` — in-app About page (book, how it works, tips, rate limiting)
+- `privacy.html` — privacy notice
 - `style.css` — layout, colors, responsive design
 - `script.js` — form behavior (integrating AI soon)
+- `assets/` — static images (e.g. book cover)

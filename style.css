@@ -41,6 +41,19 @@ button, textarea { font: inherit; }
   justify-content: flex-end;
 }
 .header-note, .time-note { color: var(--muted); font-size: .88rem; }
+a.header-note {
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.header-note:hover,
+a.header-note:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a.header-note[aria-current="page"] {
+  font-weight: 650;
+}
 .lang-picker select {
   appearance: none;
   border: 1px solid var(--line);
@@ -214,8 +227,9 @@ body:has(#monitoring-consent:not([hidden])) {
 
 @media (max-width: 680px) {
   .site-header { padding: 20px 4px; }
-  .header-tools { gap: 10px; max-width: 210px; }
+  .header-tools { gap: 10px; max-width: 260px; }
   .header-note { max-width: 170px; text-align: right; font-size: .78rem; }
+  a.header-note { max-width: none; }
   .page-shell { width: min(100% - 28px, 1000px); }
   .intro { margin: 42px auto 40px; }
   .intro-copy { font-size: .97rem; }
@@ -391,6 +405,12 @@ body:has(#monitoring-consent:not([hidden])) {
   margin-bottom: 0.5rem;
 }
 
+#results-message a {
+  color: var(--blue);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
 @media print {
   @page {
     margin: 1.4cm;
@@ -556,5 +576,43 @@ body:has(#monitoring-consent:not([hidden])) {
 .legal-table td {
   color: var(--muted);
   background: #fff;
+}
+
+/* About page — book attribution */
+.about-book {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.about-book-cover {
+  width: 140px;
+  max-width: 40%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(46, 56, 103, .12);
+  flex-shrink: 0;
+}
+.about-book-copy {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.about-book-copy cite {
+  font-style: italic;
+}
+.about-steps {
+  margin: 0 0 12px;
+  padding-left: 1.25rem;
+  color: var(--muted);
+  font-size: .95rem;
+}
+.about-steps li {
+  margin-bottom: .45rem;
+}
+
+@media (max-width: 680px) {
+  .about-book-cover {
+    width: 120px;
+  }
 }
 
