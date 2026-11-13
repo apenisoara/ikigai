@@ -10,9 +10,10 @@
     Allows Turnstile, Datadog RUM/OpenFeature (EU intake + ff-cdn), esm.sh, and the Worker API.
     connect-src includes https://*.browser-intake-datadoghq.eu for RUM remote config / replay.
     Omits connect-src data: — challenge-iframe data: fetches are Cloudflare-owned console noise.
+    font-src allows data: — Turnstile (parent page) loads an embedded WOFF2 via data:font/woff2.
     Permissions-Policy cannot be set via meta on Chromium; CF challenge iframes emit their own.
   -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://www.datadoghq-browser-agent.com https://esm.sh; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://challenges.cloudflare.com https://ikigai-gemini-api.apenisoara.workers.dev https://browser-intake-datadoghq.eu https://*.browser-intake-datadoghq.eu https://preview.ff-cdn.datadoghq.eu https://esm.sh; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://www.datadoghq-browser-agent.com https://esm.sh; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://challenges.cloudflare.com https://ikigai-gemini-api.apenisoara.workers.dev https://browser-intake-datadoghq.eu https://*.browser-intake-datadoghq.eu https://preview.ff-cdn.datadoghq.eu https://esm.sh; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
   <!-- csp-meta:end -->
 
   <meta name="description" content="Explore your Ikigai by connecting what you love, what you're good at, what you can be paid for, and what the world needs.">
