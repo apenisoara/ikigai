@@ -40,19 +40,31 @@
   const SHAKE_START_DELAY_MS = 2200;
 
   /**
-   * Click bee-swarm: scatter → overlapping wander → homing bee flight (~4s).
-   * Roughly ~2s of free flight, then ~2s still flying like bees while
-   * fluently seeking original rest positions (not a frozen glide).
-   * Offsets stay in viewBox units so bees stay inside the circles region.
+   * Click bee-swarm (~4s): wander → Reynolds “arrive” home with turbulence.
+   * Kinematics (pos/vel) are fully reset every trigger so re-clicks stay clean.
+   * Noise uses swarm-local time (not wall-clock) — avoids phase bleed across runs.
+   * Tuned from seek/arrive + dual turbulence practice (≈3 Hz + ≈7 Hz wiggle).
    * Skipped entirely when prefers-reduced-motion is set.
    */
   const SWARM_MS = 4000;
+  /** Burst outward at the start of free flight. */
   const SWARM_SCATTER_END = 0.12;
-  /** Settle occupies the second half — slow homing bee flight. */
-  const SWARM_SETTLE_START = 0.5;
-  /** Peak wander amplitude (viewBox units) — playful, still inside the diagram. */
+  /** Switch from wander to arrive-home (≈2s + ≈2s). */
+  const SWARM_ARRIVE_START = 0.48;
+  /** Soft clamp so bees stay inside the diagram region (viewBox units). */
   const SWARM_AMP = 14;
   const SWARM_RZ_DEG = 7;
+  /** ViewBox units / second — lively but readable on the diagram. */
+  const SWARM_MAX_SPEED = 30;
+  /** ViewBox units / second² — turny enough to look insect-like, not ballistic. */
+  const SWARM_MAX_FORCE = 95;
+  /** Arrival braking radius (Reynolds): speed scales down inside this distance. */
+  const SWARM_ARRIVE_RADIUS = 13;
+  /** Dual turbulence layers (Hz) — irregular bee flight without vibration. */
+  const SWARM_NOISE1_HZ = 3.1;
+  const SWARM_NOISE2_HZ = 7.2;
+  const SWARM_NOISE1_FORCE = 22;
+  const SWARM_NOISE2_FORCE = 10;
 
   const state = circles.map((el) => ({
     el,
@@ -85,11 +97,15 @@
   let shakeStartedAt = 0;
   let swarming = false;
   let swarmStartedAt = 0;
-  /** @type {null | Array<{fx:number,fy:number,fx2:number,fy2:number,fr:number,px:number,py:number,px2:number,py2:number,pr:number,ax:number,ay:number,ax2:number,ay2:number}>} */
-  let swarmParams = null;
-  /** Snapshot of each circle’s offset when settle begins — eased home from here. */
-  /** @type {null | Array<{x:number,y:number,rz:number}>} */
-  let swarmSettleFrom = null;
+  let swarmLastTickAt = 0;
+  /**
+   * Per-bee kinematics for the active swarm only. Recreated in startSwarm();
+   * never shared with tilt/shake state.
+   * @type {null | Array<{vx:number,vy:number,wanderAngle:number,scatterDir:number,phase1:number,phase2:number,phaseR:number,freq1:number,freq2:number,freqR:number,noiseAmp1:number,noiseAmp2:number}>}
+   */
+  let swarmBees = null;
+  let centerTarget = { x: 0, y: 0 };
+  let centerCurrent = { x: 0, y: 0 };
 
   function setInteracting(active) {
     diagram.classList.toggle("is-interacting", Boolean(active));
@@ -141,12 +157,6 @@
     return 1 - Math.pow(1 - p, 3);
   }
 
-  /** Balanced ease for a long, unhurried settle home. */
-  function easeInOutCubic(t) {
-    const p = clamp(t, 0, 1);
-    return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
-  }
-
   function randRange(min, max) {
     return min + Math.random() * (max - min);
   }
@@ -159,114 +169,176 @@
     return dist <= 46;
   }
 
-  function buildSwarmParams() {
-    return state.map((item, index) => {
-      // Bias wander outward from rest so paths cross through the center.
-      const outward = Math.atan2(item.cy - 50, item.cx - 50) + randRange(-0.55, 0.55);
-      const amp = SWARM_AMP * randRange(0.82, 1.12);
-      // Stagger frequencies so trajectories overlap without locking in sync.
-      // ~2–3 primary loops across the 2s flight reads as bees, not vibration.
-      const base = 0.0055 + index * 0.0007;
+  function truncate(x, y, max) {
+    const mag = Math.hypot(x, y);
+    if (mag <= max || mag < 1e-6) return { x, y };
+    const s = max / mag;
+    return { x: x * s, y: y * s };
+  }
+
+  /** Fresh per-bee kinematics — called on every trigger (fixes re-click phase bleed). */
+  function buildSwarmBees() {
+    return state.map((item) => {
+      const outward = Math.atan2(item.cy - 50, item.cx - 50) + randRange(-0.85, 0.85);
       return {
-        fx: base * randRange(0.95, 1.3),
-        fy: base * randRange(0.9, 1.35) * 1.2,
-        fx2: base * randRange(1.8, 2.5),
-        fy2: base * randRange(1.7, 2.6),
-        fr: base * randRange(2.0, 3.0),
-        px: outward + randRange(-Math.PI, Math.PI),
-        py: outward * 1.3 + randRange(-Math.PI, Math.PI),
-        px2: randRange(0, Math.PI * 2),
-        py2: randRange(0, Math.PI * 2),
-        pr: randRange(0, Math.PI * 2),
-        ax: Math.cos(outward) * amp * randRange(0.8, 1.1),
-        ay: Math.sin(outward) * amp * randRange(0.8, 1.1),
-        ax2: amp * randRange(0.35, 0.55),
-        ay2: amp * randRange(0.35, 0.55)
+        vx: Math.cos(outward) * randRange(6, 14),
+        vy: Math.sin(outward) * randRange(6, 14),
+        wanderAngle: outward + randRange(-Math.PI, Math.PI),
+        scatterDir: outward,
+        phase1: randRange(0, Math.PI * 2),
+        phase2: randRange(0, Math.PI * 2),
+        phaseR: randRange(0, Math.PI * 2),
+        freq1: SWARM_NOISE1_HZ * randRange(0.85, 1.2),
+        freq2: SWARM_NOISE2_HZ * randRange(0.85, 1.25),
+        freqR: 4.2 * randRange(0.8, 1.25),
+        noiseAmp1: SWARM_NOISE1_FORCE * randRange(0.85, 1.15),
+        noiseAmp2: SWARM_NOISE2_FORCE * randRange(0.85, 1.15)
       };
     });
   }
 
-  function swarmEnvelope(progress) {
-    if (progress <= 0) return 0;
-    if (progress >= 1) return 0;
-    if (progress < SWARM_SCATTER_END) {
-      return easeOutCubic(progress / SWARM_SCATTER_END);
+  function resetSwarmVisualPose() {
+    for (const item of state) {
+      item.x = 0;
+      item.y = 0;
+      item.z = 0;
+      item.rx = 0;
+      item.ry = 0;
+      item.scale = 1;
+      item.swarmRz = 0;
     }
-    // Free-flight + settle both keep full envelope; settle homes via seek, not amp kill.
-    return 1;
-  }
-
-  function sampleSwarmFlight(itemIndex, now, envelope) {
-    const p = swarmParams[itemIndex];
-    if (!p || envelope <= 0) return { x: 0, y: 0, rz: 0 };
-    // Overlapping Lissajous-ish wander — organic “bee” crossings inside the region.
-    const x =
-      (Math.sin(now * p.fx + p.px) * p.ax + Math.sin(now * p.fx2 + p.px2) * p.ax2) *
-      envelope;
-    const y =
-      (Math.cos(now * p.fy + p.py) * p.ay + Math.sin(now * p.fy2 + p.py2) * p.ay2) *
-      envelope;
-    const rz = Math.sin(now * p.fr + p.pr) * SWARM_RZ_DEG * envelope;
-    return {
-      x: clamp(x, -SWARM_AMP * 1.25, SWARM_AMP * 1.25),
-      y: clamp(y, -SWARM_AMP * 1.25, SWARM_AMP * 1.25),
-      rz
-    };
+    centerCurrent.x = 0;
+    centerCurrent.y = 0;
   }
 
   /**
-   * Homing bee flight: orbit center seeks rest, while a strong living wander
-   * keeps the path bee-like (not a frozen slide along a straight line).
+   * Integrate one swarm frame. Uses swarm-local seconds for noise so the 2nd
+   * click in a session does not inherit wall-clock phase from the first run.
    */
-  function sampleSwarmSettle(itemIndex, now, settleT) {
-    const from = swarmSettleFrom && swarmSettleFrom[itemIndex];
-    const p = swarmParams && swarmParams[itemIndex];
-    if (!from || !p) return { x: 0, y: 0, rz: 0 };
+  function stepSwarm(now) {
+    if (!swarmBees) return;
+    const elapsedMs = now - swarmStartedAt;
+    const progress = elapsedMs / SWARM_MS;
+    let dt = (now - swarmLastTickAt) / 1000;
+    swarmLastTickAt = now;
+    // Clamp dt so a tab-throttle hitch cannot explode velocities.
+    dt = clamp(dt, 1 / 240, 1 / 20);
+    const tSec = elapsedMs / 1000;
 
-    // Fluent home pull on the seek target (where the bee is trying to go).
-    const homePull = easeInOutCubic(settleT);
-    const centerX = from.x * (1 - homePull);
-    const centerY = from.y * (1 - homePull);
-    const centerRz = from.rz * (1 - homePull);
-    const remainDist = Math.hypot(centerX, centerY);
+    state.forEach((item, index) => {
+      const bee = swarmBees[index];
+      let forceX = 0;
+      let forceY = 0;
 
-    // Keep wingbeat lively — only gently lazy near landing.
-    const slow = 0.7 + 0.3 * (1 - settleT);
-    // Wiggle scales with remaining distance, with a visible floor until late settle.
-    const wiggle =
-      Math.max(remainDist * 0.62, SWARM_AMP * 0.28 * (1 - settleT)) *
-      Math.pow(1 - settleT, 0.25);
+      // Dual turbulence (independent layers ≈3 Hz + ≈7 Hz).
+      const n1x = Math.sin(Math.PI * 2 * bee.freq1 * tSec + bee.phase1);
+      const n1y = Math.cos(Math.PI * 2 * bee.freq1 * tSec + bee.phase1 * 1.37);
+      const n2x = Math.sin(Math.PI * 2 * bee.freq2 * tSec + bee.phase2);
+      const n2y = Math.cos(Math.PI * 2 * bee.freq2 * tSec + bee.phase2 * 0.71);
 
-    const bx =
-      (Math.sin(now * p.fx * slow + p.px) * (p.ax / SWARM_AMP) +
-        Math.sin(now * p.fx2 * slow + p.px2) * (p.ax2 / SWARM_AMP)) *
-      wiggle;
-    const by =
-      (Math.cos(now * p.fy * slow + p.py) * (p.ay / SWARM_AMP) +
-        Math.sin(now * p.fy2 * slow + p.py2) * (p.ay2 / SWARM_AMP)) *
-      wiggle;
-    const brz =
-      Math.sin(now * p.fr * slow + p.pr) * SWARM_RZ_DEG * (0.35 + 0.65 * (1 - settleT));
+      if (progress < SWARM_ARRIVE_START) {
+        // --- Free flight: scatter burst + wander ---
+        const scatterT = Math.min(1, progress / SWARM_SCATTER_END);
+        const burst = (1 - easeOutCubic(scatterT)) * 70;
+        forceX += Math.cos(bee.scatterDir) * burst;
+        forceY += Math.sin(bee.scatterDir) * burst;
 
-    return {
-      x: clamp(centerX + bx, -SWARM_AMP * 1.35, SWARM_AMP * 1.35),
-      y: clamp(centerY + by, -SWARM_AMP * 1.35, SWARM_AMP * 1.35),
-      rz: centerRz * 0.25 + brz
-    };
+        // Reynolds-style wander: slowly yaw the steering heading.
+        bee.wanderAngle +=
+          Math.sin(Math.PI * 2 * 0.55 * tSec + bee.phase2) * 4.5 * dt +
+          randRange(-1.8, 1.8) * dt;
+        const wanderForce = 58;
+        forceX += Math.cos(bee.wanderAngle) * wanderForce;
+        forceY += Math.sin(bee.wanderAngle) * wanderForce;
+
+        forceX += n1x * bee.noiseAmp1 + n2x * bee.noiseAmp2;
+        forceY += n1y * bee.noiseAmp1 + n2y * bee.noiseAmp2;
+      } else {
+        // --- Arrive home (0,0): seek with braking radius + fading turbulence ---
+        const settleT =
+          (progress - SWARM_ARRIVE_START) / (1 - SWARM_ARRIVE_START);
+        const px = item.x;
+        const py = item.y;
+        const dist = Math.hypot(px, py);
+
+        if (dist > 0.02) {
+          // desiredSpeed shrinks inside arrive radius (classic Reynolds arrive).
+          const desiredSpeed =
+            SWARM_MAX_SPEED * Math.min(1, dist / SWARM_ARRIVE_RADIUS);
+          const desiredVx = (-px / dist) * desiredSpeed;
+          const desiredVy = (-py / dist) * desiredSpeed;
+          forceX += (desiredVx - bee.vx) * 5.5;
+          forceY += (desiredVy - bee.vy) * 5.5;
+        } else {
+          bee.vx *= 0.6;
+          bee.vy *= 0.6;
+        }
+
+        // Turbulence stays alive while far, fades as they land (still bee-like).
+        const turb =
+          Math.min(1, dist / SWARM_ARRIVE_RADIUS) * Math.pow(1 - settleT, 0.55);
+        forceX += (n1x * bee.noiseAmp1 + n2x * bee.noiseAmp2) * turb;
+        forceY += (n1y * bee.noiseAmp1 + n2y * bee.noiseAmp2) * turb;
+
+        // Late soft spring so they always finish at rest without a hard snap.
+        if (settleT > 0.65) {
+          const k = (settleT - 0.65) / 0.35;
+          forceX += -px * (12 * k);
+          forceY += -py * (12 * k);
+          bee.vx *= 1 - 0.15 * k;
+          bee.vy *= 1 - 0.15 * k;
+        }
+      }
+
+      const steered = truncate(forceX, forceY, SWARM_MAX_FORCE);
+      bee.vx += steered.x * dt;
+      bee.vy += steered.y * dt;
+
+      const maxSpeed =
+        progress < SWARM_ARRIVE_START ? SWARM_MAX_SPEED : SWARM_MAX_SPEED * 0.92;
+      const capped = truncate(bee.vx, bee.vy, maxSpeed);
+      bee.vx = capped.x;
+      bee.vy = capped.y;
+
+      item.x = clamp(item.x + bee.vx * dt, -SWARM_AMP * 1.3, SWARM_AMP * 1.3);
+      item.y = clamp(item.y + bee.vy * dt, -SWARM_AMP * 1.3, SWARM_AMP * 1.3);
+
+      const rzFade =
+        progress < SWARM_ARRIVE_START
+          ? 1
+          : Math.max(
+              0,
+              1 - (progress - SWARM_ARRIVE_START) / (1 - SWARM_ARRIVE_START)
+            );
+      item.swarmRz =
+        Math.sin(Math.PI * 2 * bee.freqR * tSec + bee.phaseR) *
+        SWARM_RZ_DEG *
+        (0.45 + 0.55 * rzFade);
+
+      item.z += (0 - item.z) * EASE;
+      item.rx += (0 - item.rx) * EASE;
+      item.ry += (0 - item.ry) * EASE;
+      item.scale += (1 - item.scale) * EASE;
+    });
+
+    centerCurrent.x += (0 - centerCurrent.x) * EASE;
+    centerCurrent.y += (0 - centerCurrent.y) * EASE;
   }
 
   function startSwarm() {
     // Respect prefers-reduced-motion: skip flight (CSS also freezes transforms).
     if (reduceMotion.matches) return false;
 
-    swarmParams = buildSwarmParams();
-    swarmSettleFrom = null;
     pauseIdleShakes();
+    // Full kinematic + visual reset every trigger (no cross-run / cross-phase reuse).
+    swarmBees = buildSwarmBees();
+    // centerCurrent exists later in the file via let — ensure startSwarm runs after init only.
+    resetSwarmVisualPose();
     swarming = true;
     swarmStartedAt = performance.now();
+    swarmLastTickAt = swarmStartedAt;
     diagram.classList.add("is-swarming");
     setInteracting(true);
-    // Clear tilt targets so bees own planar motion during the flight.
     resetTargets();
     centerTarget.x = 0;
     centerTarget.y = 0;
@@ -276,10 +348,12 @@
 
   function endSwarm() {
     swarming = false;
-    swarmParams = null;
-    swarmSettleFrom = null;
+    swarmBees = null;
+    swarmLastTickAt = 0;
     diagram.classList.remove("is-swarming");
     for (const item of state) {
+      item.x = 0;
+      item.y = 0;
       item.swarmRz = 0;
       item.tx = 0;
       item.ty = 0;
@@ -351,9 +425,6 @@
     }
     return { centerX: 0, centerY: 0 };
   }
-
-  let centerTarget = { x: 0, y: 0 };
-  let centerCurrent = { x: 0, y: 0 };
 
   function viewBoxToPixels() {
     const box = svg.getBoundingClientRect();
@@ -440,20 +511,10 @@
 
     let moving = false;
 
-    if (swarming && swarmParams) {
+    if (swarming && swarmBees) {
       const progress = (now - swarmStartedAt) / SWARM_MS;
       if (progress >= 1) {
-        for (const item of state) {
-          item.x = 0;
-          item.y = 0;
-          item.z = 0;
-          item.rx = 0;
-          item.ry = 0;
-          item.scale = 1;
-          item.swarmRz = 0;
-        }
-        centerCurrent.x = 0;
-        centerCurrent.y = 0;
+        resetSwarmVisualPose();
         applyTransforms(now);
         endSwarm();
         // Continue one more frame if pointer/idle needs the loop.
@@ -465,34 +526,7 @@
         return;
       }
 
-      let sampleFn;
-      if (progress >= SWARM_SETTLE_START) {
-        // First settle frame: remember where each bee is, then fly home from there.
-        if (!swarmSettleFrom) {
-          swarmSettleFrom = state.map((_, index) =>
-            sampleSwarmFlight(index, now, 1)
-          );
-        }
-        const settleT = (progress - SWARM_SETTLE_START) / (1 - SWARM_SETTLE_START);
-        sampleFn = (index) => sampleSwarmSettle(index, now, settleT);
-      } else {
-        const envelope = swarmEnvelope(progress);
-        sampleFn = (index) => sampleSwarmFlight(index, now, envelope);
-      }
-
-      state.forEach((item, index) => {
-        const sample = sampleFn(index);
-        item.x = sample.x;
-        item.y = sample.y;
-        item.swarmRz = sample.rz;
-        // Ease tilt/depth home while bees fly.
-        item.z += (0 - item.z) * EASE;
-        item.rx += (0 - item.rx) * EASE;
-        item.ry += (0 - item.ry) * EASE;
-        item.scale += (1 - item.scale) * EASE;
-      });
-      centerCurrent.x += (0 - centerCurrent.x) * EASE;
-      centerCurrent.y += (0 - centerCurrent.y) * EASE;
+      stepSwarm(now);
       moving = true;
     } else {
       for (const item of state) {
@@ -735,8 +769,8 @@
       pauseIdleShakes();
       if (swarming) {
         swarming = false;
-        swarmParams = null;
-        swarmSettleFrom = null;
+        swarmBees = null;
+        swarmLastTickAt = 0;
         diagram.classList.remove("is-swarming");
       }
       resetTargets();
