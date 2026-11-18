@@ -167,6 +167,66 @@ try {
     })
   );
 
+  // #37: focus (as tap does on mobile) then swarm must clear sticky .is-active / focus.
+  const paid = page.locator('.diagram-circle[data-circle="paid"]');
+  await paid.focus();
+  await page.waitForTimeout(40);
+  const preFocus = await page.evaluate(() => {
+    const el = document.querySelector('.diagram-circle[data-circle="paid"]');
+    return {
+      active: el.classList.contains("is-active"),
+      focused: document.activeElement === el
+    };
+  });
+  record(
+    "focus sets is-active before swarm clear test",
+    preFocus.active && preFocus.focused,
+    JSON.stringify(preFocus)
+  );
+
+  const cleared = await page.evaluate(() => {
+    const root = document.querySelector(".ikigai-diagram");
+    const started = root._ikigaiDiagramTest.triggerSwarm();
+    // Pointer may still be over the diagram from earlier moves — must not re-stick active.
+    root.dispatchEvent(
+      new PointerEvent("pointermove", {
+        bubbles: true,
+        clientX: 400,
+        clientY: 400
+      })
+    );
+    const activeKeys = [...root.querySelectorAll(".diagram-circle.is-active")].map((el) =>
+      el.getAttribute("data-circle")
+    );
+    const focusedIsCircle =
+      document.activeElement &&
+      document.activeElement.classList &&
+      document.activeElement.classList.contains("diagram-circle");
+    return {
+      started,
+      swarming: root._ikigaiDiagramTest.isSwarming(),
+      activeKeys,
+      focusedIsCircle: Boolean(focusedIsCircle)
+    };
+  });
+  record(
+    "tap/focus then swarm clears active",
+    cleared.started &&
+      cleared.swarming &&
+      cleared.activeKeys.length === 0 &&
+      !cleared.focusedIsCircle,
+    JSON.stringify(cleared)
+  );
+  await page.waitForTimeout(4200);
+  // Leave diagram so later settle checks are not contaminated by leftover tilt.
+  await page.evaluate(() => {
+    document
+      .querySelector(".ikigai-diagram")
+      ?.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+  });
+  await page.mouse.move(8, 8);
+  await page.waitForTimeout(80);
+
   // Also verify a real click path starts the swarm.
   const clickStarted = await page.evaluate(async () => {
     const root = document.querySelector(".ikigai-diagram");

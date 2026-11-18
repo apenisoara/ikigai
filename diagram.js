@@ -223,6 +223,16 @@
     // Respect prefers-reduced-motion: skip flight (CSS also freezes transforms).
     if (reduceMotion.matches) return false;
 
+    // #37: drop sticky focus / .is-active so hover highlight does not stick through swarm.
+    focusedEl = null;
+    setActiveByKey(null);
+    swarming = true;
+    const focused = document.activeElement;
+    if (focused && diagram.contains(focused) && typeof focused.blur === "function") {
+      focused.blur();
+    }
+    pauseIdleShakes();
+
     // Fresh params every click (no cross-run reuse); local elapsed resets below.
     swarmParams = buildSwarmParams();
     for (const item of state) {
@@ -230,8 +240,6 @@
       item.y = 0;
       item.swarmRz = 0;
     }
-    pauseIdleShakes();
-    swarming = true;
     swarmStartedAt = performance.now();
     diagram.classList.add("is-swarming");
     setInteracting(true);
@@ -583,6 +591,9 @@
 
   function updateFromPointer(clientX, clientY) {
     lastPointer = { x: clientX, y: clientY };
+    // Keep highlight cleared for the flight (#37); skip tilt while bees own motion.
+    if (swarming) return;
+
     const svgPoint = clientToSvg(clientX, clientY);
     const hit = hitTest(svgPoint.x, svgPoint.y);
 
@@ -592,7 +603,7 @@
       setActiveByKey(hit ? hit.key : null);
     }
 
-    if (reduceMotion.matches || swarming) return;
+    if (reduceMotion.matches) return;
 
     const center = computeTargets(svgPoint.x, svgPoint.y);
     centerTarget.x = center.centerX;
