@@ -740,14 +740,17 @@ body:has(#monitoring-consent:not([hidden])) {
   filter: brightness(1.05) saturate(1.04);
 }
 
-/* Soften siblings gently — keep enough fill so labels stay readable */
-.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
-  .diagram-circle:not(:hover):not(:focus-visible):not(.is-active) {
+/*
+ * Emphasize via JS .is-active (pointermove) and :focus-visible (keyboard).
+ * Bare :hover is omitted so a still mouse / sticky touch hover after swarm
+ * does not keep the glow without a fresh move (#37).
+ */
+.ikigai-diagram:has(.diagram-circle:focus-visible, .diagram-circle.is-active)
+  .diagram-circle:not(:focus-visible):not(.is-active) {
   fill-opacity: 0.38;
   filter: brightness(0.94) saturate(0.92);
 }
 
-.diagram-circle:hover,
 .diagram-circle:focus-visible,
 .diagram-circle.is-active {
   fill-opacity: 0.86 !important;
@@ -785,7 +788,6 @@ body:has(#monitoring-consent:not([hidden])) {
     will-change: auto;
   }
 
-  .diagram-circle:hover,
   .diagram-circle:focus-visible,
   .diagram-circle.is-active {
     transform: none;
@@ -861,7 +863,7 @@ body:has(#monitoring-consent:not([hidden])) {
 }
 
 /* Keep labels readable when a circle is emphasized */
-.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
+.ikigai-diagram:has(.diagram-circle:focus-visible, .diagram-circle.is-active)
   .diagram-label {
   text-shadow: 0 1px 3px rgba(32, 38, 66, 0.35);
 }
@@ -885,7 +887,7 @@ body:has(#monitoring-consent:not([hidden])) {
   will-change: transform;
 }
 
-.ikigai-diagram:has(.diagram-circle:hover, .diagram-circle:focus-visible, .diagram-circle.is-active)
+.ikigai-diagram:has(.diagram-circle:focus-visible, .diagram-circle.is-active)
   .diagram-center,
 .ikigai-diagram.is-parallaxing .diagram-center {
   text-shadow: 0 2px 10px rgba(32, 38, 66, 0.28);

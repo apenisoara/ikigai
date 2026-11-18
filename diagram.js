@@ -219,9 +219,23 @@
     return 1 - easeInCubic(settleT);
   }
 
+  /** #37: drop sticky focus / .is-active (click/tap leave these set without a move). */
+  function clearHighlight() {
+    focusedEl = null;
+    setActiveByKey(null);
+    const focused = document.activeElement;
+    if (focused && diagram.contains(focused) && typeof focused.blur === "function") {
+      focused.blur();
+    }
+  }
+
   function startSwarm() {
     // Respect prefers-reduced-motion: skip flight (CSS also freezes transforms).
     if (reduceMotion.matches) return false;
+
+    clearHighlight();
+    swarming = true;
+    pauseIdleShakes();
 
     // Fresh params every click (no cross-run reuse); local elapsed resets below.
     swarmParams = buildSwarmParams();
@@ -230,8 +244,6 @@
       item.y = 0;
       item.swarmRz = 0;
     }
-    pauseIdleShakes();
-    swarming = true;
     swarmStartedAt = performance.now();
     diagram.classList.add("is-swarming");
     setInteracting(true);
@@ -261,10 +273,14 @@
       const label = labelByKey[item.key];
       if (label) label.classList.remove("is-swarming");
     }
-    setInteracting(Boolean(activeKey) || pointerInside || Boolean(focusedEl));
-    if (pointerInside && lastPointer && !reduceMotion.matches) {
-      updateFromPointer(lastPointer.x, lastPointer.y);
-    } else if (idleAllowed()) {
+    // #37: do not revive hover from the click/tap's stale lastPointer — touch
+    // devices rarely get a move, and a still mouse would re-stick highlight.
+    // Fresh pointermove / keyboard focus re-arms emphasis after settle.
+    pointerInside = false;
+    lastPointer = null;
+    clearHighlight();
+    setInteracting(false);
+    if (idleAllowed()) {
       scheduleIdleShake(randomGap());
     }
   }
@@ -583,6 +599,9 @@
 
   function updateFromPointer(clientX, clientY) {
     lastPointer = { x: clientX, y: clientY };
+    // Keep highlight cleared for the flight (#37); skip tilt while bees own motion.
+    if (swarming) return;
+
     const svgPoint = clientToSvg(clientX, clientY);
     const hit = hitTest(svgPoint.x, svgPoint.y);
 
@@ -592,7 +611,7 @@
       setActiveByKey(hit ? hit.key : null);
     }
 
-    if (reduceMotion.matches || swarming) return;
+    if (reduceMotion.matches) return;
 
     const center = computeTargets(svgPoint.x, svgPoint.y);
     centerTarget.x = center.centerX;
