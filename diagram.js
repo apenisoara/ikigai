@@ -219,18 +219,22 @@
     return 1 - easeInCubic(settleT);
   }
 
-  function startSwarm() {
-    // Respect prefers-reduced-motion: skip flight (CSS also freezes transforms).
-    if (reduceMotion.matches) return false;
-
-    // #37: drop sticky focus / .is-active so hover highlight does not stick through swarm.
+  /** #37: drop sticky focus / .is-active (click/tap leave these set without a move). */
+  function clearHighlight() {
     focusedEl = null;
     setActiveByKey(null);
-    swarming = true;
     const focused = document.activeElement;
     if (focused && diagram.contains(focused) && typeof focused.blur === "function") {
       focused.blur();
     }
+  }
+
+  function startSwarm() {
+    // Respect prefers-reduced-motion: skip flight (CSS also freezes transforms).
+    if (reduceMotion.matches) return false;
+
+    clearHighlight();
+    swarming = true;
     pauseIdleShakes();
 
     // Fresh params every click (no cross-run reuse); local elapsed resets below.
@@ -269,10 +273,14 @@
       const label = labelByKey[item.key];
       if (label) label.classList.remove("is-swarming");
     }
-    setInteracting(Boolean(activeKey) || pointerInside || Boolean(focusedEl));
-    if (pointerInside && lastPointer && !reduceMotion.matches) {
-      updateFromPointer(lastPointer.x, lastPointer.y);
-    } else if (idleAllowed()) {
+    // #37: do not revive hover from the click/tap's stale lastPointer — touch
+    // devices rarely get a move, and a still mouse would re-stick highlight.
+    // Fresh pointermove / keyboard focus re-arms emphasis after settle.
+    pointerInside = false;
+    lastPointer = null;
+    clearHighlight();
+    setInteracting(false);
+    if (idleAllowed()) {
       scheduleIdleShake(randomGap());
     }
   }
